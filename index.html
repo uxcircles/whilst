@@ -487,6 +487,12 @@ nav {
   margin-bottom: 40px;
 }
 
+.substack-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
 .substack-card {
   border: 1px solid var(--border-strong);
   padding: 48px;
@@ -803,6 +809,7 @@ footer {
   .feature-item { grid-template-columns: 1fr; gap: 8px; }
   .feature-number { padding-top: 0; }
 
+  .substack-grid { grid-template-columns: 1fr; }
   .substack-card { padding: 32px 24px; }
 }
 </style>
@@ -975,12 +982,20 @@ footer {
 <!-- SUBSTACK -->
 <section class="substack-section">
   <div class="substack-label reveal" id="sub-label">The story behind it</div>
-  <a href="https://medium.com/uxcircles/i-set-out-to-build-a-finance-app-i-built-a-mirror-instead-6b107ab2728f" class="substack-card reveal" target="_blank" rel="noopener">
-    <div class="substack-card-label" id="sub-card-label">Essay</div>
-    <div class="substack-card-title" id="sub-card-title">I set out to build a finance app. I built a mirror instead.</div>
-    <p class="substack-card-desc" id="sub-card-desc">A UI/UX designer's account of building a product with Claude — and what it asked of me along the way.</p>
-    <div class="substack-card-arrow" id="sub-card-arrow">Read on Medium →</div>
-  </a>
+  <div class="substack-grid">
+    <a href="https://medium.com/uxcircles/i-set-out-to-build-a-finance-app-i-built-a-mirror-instead-6b107ab2728f" class="substack-card reveal" target="_blank" rel="noopener">
+      <div class="substack-card-label" id="sub-card-label">Essay</div>
+      <div class="substack-card-title" id="sub-card-title">I set out to build a finance app. I built a mirror instead.</div>
+      <p class="substack-card-desc" id="sub-card-desc">A UI/UX designer's account of building a product with Claude — and what it asked of me along the way.</p>
+      <div class="substack-card-arrow" id="sub-card-arrow">Read on Medium →</div>
+    </a>
+    <a href="https://medium.com/uxcircles/i-had-never-deployed-anything-then-i-built-a-real-product-with-claude-cc66e56a99ff" class="substack-card reveal" target="_blank" rel="noopener">
+      <div class="substack-card-label" id="sub-card2-label">Making Of</div>
+      <div class="substack-card-title" id="sub-card2-title">I had never deployed anything, then I built a real product with Claude.</div>
+      <p class="substack-card-desc" id="sub-card2-desc">What it actually feels like to ship software for the first time — when the AI does the coding, and you do the thinking.</p>
+      <div class="substack-card-arrow" id="sub-card2-arrow">Read on Medium →</div>
+    </a>
+  </div>
 </section>
 
 <!-- FOOTER -->
@@ -1026,11 +1041,15 @@ const strings = {
   q_sub:            isZh ? '不是你應該想要的，也不是說出來好聽的。如果不只一個，選那個讓你深夜失眠的。' : 'Not what you should want. Not what sounds noble. If there is more than one, choose the one that keeps you awake at night.',
   q_cta:            isZh ? '啟程' : 'Begin',
 
-  sub_label:        isZh ? '這個 app 背後的故事' : 'The story behind it',
-  sub_card_label:   isZh ? '文章' : 'Essay',
-  sub_card_title:   isZh ? '我只是想做一個理財 App，最後卻做了一面鏡子' : 'I set out to build a finance app. I built a mirror instead.',
-  sub_card_desc:    isZh ? '一個 UI/UX 設計師用 Claude 做產品的真實過程，以及這個過程問了我自己什麼。' : "A UI/UX designer's account of building a product with Claude — and what it asked of me along the way.",
-  sub_card_arrow:   isZh ? '在 Medium 閱讀 →' : 'Read on Medium →',
+  sub_label:         isZh ? '這個 app 背後的故事' : 'The story behind it',
+  sub_card_label:    isZh ? '文章' : 'Essay',
+  sub_card_title:    isZh ? '我只是想做一個理財 App，最後卻做了一面鏡子' : 'I set out to build a finance app. I built a mirror instead.',
+  sub_card_desc:     isZh ? '一個 UI/UX 設計師用 Claude 做產品的真實過程，以及這個過程問了我自己什麼。' : "A UI/UX designer's account of building a product with Claude — and what it asked of me along the way.",
+  sub_card_arrow:    isZh ? '在 Medium 閱讀 →' : 'Read on Medium →',
+  sub_card2_label:   isZh ? '製作過程' : 'Making Of',
+  sub_card2_title:   isZh ? '我從未部署過任何東西，然後我用 Claude 做出了一個真正的產品。' : 'I had never deployed anything, then I built a real product with Claude.',
+  sub_card2_desc:    isZh ? '第一次「出貨」是什麼感覺——當 AI 負責寫程式，而你負責思考。' : 'What it actually feels like to ship software for the first time — when the AI does the coding, and you do the thinking.',
+  sub_card2_arrow:   isZh ? '在 Medium 閱讀 →' : 'Read on Medium →',
 
   footer_enter:     isZh ? '進入 app →' : 'Enter the app →',
   mid_caption:      isZh ? '帳本不會說謊。問題是你有沒有在聽。' : 'The ledger does not lie. The question is whether you are listening.',
@@ -1078,6 +1097,10 @@ function applyTranslations() {
   set('sub-card-title', strings.sub_card_title);
   set('sub-card-desc', strings.sub_card_desc);
   set('sub-card-arrow', strings.sub_card_arrow);
+  set('sub-card2-label', strings.sub_card2_label);
+  set('sub-card2-title', strings.sub_card2_title);
+  set('sub-card2-desc', strings.sub_card2_desc);
+  set('sub-card2-arrow', strings.sub_card2_arrow);
 
   set('footer-enter', strings.footer_enter);
   set('mid-caption', strings.mid_caption);
