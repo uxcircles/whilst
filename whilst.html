@@ -25,9 +25,11 @@
 <meta name="twitter:title" content="Whilst — Time, Money, Life">
 <meta name="twitter:description" content="Not a finance app. A mirror. See where your money goes — and what it reveals about the life you're actually living.">
 <meta name="twitter:image" content="https://raw.githubusercontent.com/uxcircles/whilst/main/og.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500;1,6..72,600&family=DM+Mono:wght@400&display=swap">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="window._supabaseLoadFailed=true"></script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500;1,6..72,600&family=DM+Mono:wght@0,400&display=swap&display=swap');
 
 :root {
   --void: #0a0a0a;
@@ -1471,7 +1473,7 @@ input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.3); }
       <!-- Stats -->
       <div class="stats-row" id="stats-row">
         <div class="stat-card">
-          <div class="stat-card-value" id="stat-total">£0</div>
+          <div class="stat-card-value" id="stat-total">—</div>
           <div class="stat-card-label" id="stat-total-label">spent<br>this month</div>
         </div>
         <div class="stat-card">
@@ -1656,7 +1658,7 @@ input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.3); }
     <div class="record-modal-body">
       <div class="form-row">
         <input class="form-input" id="exp-name" placeholder="What did you buy?" maxlength="40" data-ph-en="What did you buy?" data-ph-zh="你買了什麼？">
-        <input class="form-input amount" id="exp-amount" type="number" placeholder="£0" min="0">
+        <input class="form-input amount" id="exp-amount" type="number" placeholder="0" min="0">
       </div>
       <div class="motive-label" id="motive-label-text">Why, honestly?</div>
       <div class="motive-grid">
@@ -1681,9 +1683,9 @@ input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.3); }
     <div class="followup-label" id="followup-label-el">Seven days later</div>
     <div class="followup-q" id="followup-q-el">You bought something whilst feeling rather low.</div>
     <div class="followup-item" id="followup-item">—</div>
-    <div class="followup-q" style="font-size:17px;">Does it still bring you any pleasure?</div>
+    <div class="followup-q" style="font-size:17px;" id="followup-pleasure-q">Does it still bring you any pleasure?</div>
     <div class="followup-options">
-      <button class="followup-opt" onclick="answerFollowup(true)">Yes, genuinely. It was worth it.</button>
+      <button class="followup-opt" onclick="answerFollowup(true)" id="followup-worth-btn">Yes, genuinely. It was worth it.</button>
       <button class="followup-opt" onclick="answerFollowup(false)" id="followup-forgotten-btn">Honestly — I had nearly forgotten.</button>
     </div>
   </div>
@@ -1720,6 +1722,18 @@ function esc(str) {
 // ── DATE FORMATTING ──
 const userLocale = navigator.language || 'en-GB';
 const isZh = userLocale.startsWith('zh');
+
+function getCurrency() {
+  const l = userLocale.toLowerCase();
+  if (l.startsWith('zh-tw') || l.startsWith('zh-hant')) return 'NT$';
+  if (l.startsWith('zh-hk') || l.startsWith('zh-mo')) return 'HK$';
+  if (l.startsWith('zh')) return '¥';
+  if (l.startsWith('ja')) return '¥';
+  if (l.startsWith('ko')) return '₩';
+  if (l.startsWith('en-us') || l.startsWith('en-ca')) return '$';
+  if (l.startsWith('en-au') || l.startsWith('en-nz')) return 'A$';
+  return '£';
+}
 
 function formatDate(date = new Date()) {
   return new Intl.DateTimeFormat(userLocale, {
@@ -1964,8 +1978,9 @@ const t = {
   // Followup modal
   followup_label: isZh ? '七天後' : 'Seven days later',
   followup_q: isZh ? '你買了一件讓自己感覺好一點的東西。' : 'You bought something whilst feeling rather low.',
+  followup_pleasure_q: isZh ? '它現在還讓你感到愉悅嗎？' : 'Does it still bring you any pleasure?',
   followup_forgotten: isZh ? '說實話，我幾乎已經忘了。' : "Honestly — I had nearly forgotten.",
-  followup_worth_it: isZh ? '值得，我不後悔。' : 'Still, it was worth it.',
+  followup_worth_it: isZh ? '值得，我不後悔。' : 'Yes, genuinely. It was worth it.',
 
   // Record modal
   record_modal_what_ph: isZh ? '你買了什麼？' : 'What did you buy?',
@@ -2034,6 +2049,8 @@ function applyTranslations() {
   if (followupForgotten) followupForgotten.textContent = t.followup_forgotten;
   const followupWorth = document.getElementById('followup-worth-btn');
   if (followupWorth) followupWorth.textContent = t.followup_worth_it;
+  const followupPleasureQ = document.getElementById('followup-pleasure-q');
+  if (followupPleasureQ) followupPleasureQ.textContent = t.followup_pleasure_q;
 
   // Record modal placeholder handled below
 
@@ -2673,7 +2690,7 @@ function calcOtherFund() {
   const fund = parseFloat(document.getElementById('w-other-fund')?.value);
   if (!fund) return;
   state.otherFund = fund;
-  document.getElementById('window-number').textContent = `£${fund.toLocaleString()}`;
+  document.getElementById('window-number').textContent = `${getCurrency()}${fund.toLocaleString()}`;
   document.getElementById('window-label').textContent = `That is what stands between you and it. Every purchase moves you closer or further away.`;
   document.getElementById('window-result').classList.add('visible');
 }
@@ -2693,7 +2710,7 @@ function calcEscapeFund() {
   const fund = parseFloat(document.getElementById('w-escape-fund')?.value);
   if (!fund) return;
   state.escapeFund = fund;
-  document.getElementById('window-number').textContent = `£${fund.toLocaleString()}`;
+  document.getElementById('window-number').textContent = `${getCurrency()}${fund.toLocaleString()}`;
   document.getElementById('window-label').textContent =
     `That is your number. Every purchase brings you closer to it, or further away.`;
   document.getElementById('window-result').classList.add('visible');
@@ -3098,13 +3115,13 @@ function populateApp() {
     if (accountSection) accountSection.style.display = 'none';
   } else if (currentUser) {
     if (accountSection) accountSection.style.display = 'block';
-    accountPrompt.textContent = `Signed in as ${currentUser.email}`;
-    accountBtn.textContent = 'Sign out →';
+    accountPrompt.textContent = `${t.account_signed} ${currentUser.email}`;
+    accountBtn.textContent = t.account_signout;
     accountBtn.onclick = handleSignOut;
   } else {
     if (accountSection) accountSection.style.display = 'block';
-    accountPrompt.textContent = 'Your records exist only on this device.';
-    accountBtn.textContent = 'Create an account to keep them →';
+    accountPrompt.textContent = t.account_local;
+    accountBtn.textContent = t.account_create;
     accountBtn.onclick = () => openAuthModal();
   }
   document.getElementById('app-longing').textContent = state.longing || '—';
@@ -3131,7 +3148,7 @@ function populateApp() {
   // Window bar
   document.getElementById('app-window-days').textContent = state.windowDays
     ? state.windowDays.toLocaleString()
-    : state.escapeFund > 0 ? `£${state.escapeFund.toLocaleString()}` : '—';
+    : state.escapeFund > 0 ? `${getCurrency()}${state.escapeFund.toLocaleString()}` : '—';
 
   document.getElementById('app-window-label').innerHTML = state.escapeFund > 0 && selectedLongingType === 'freedom'
     ? (isZh ? '距離逃脫基金' : 'your escape fund')
@@ -3359,7 +3376,7 @@ async function commitExpense(name, amount, motive) {
   // Prompt sign up after first expense if not signed in
   if (isFirst && !currentUser) {
     setTimeout(() => {
-      openAuthModal('Would you like to save your records across devices?');
+      openAuthModal(t.auth_reason);
     }, 2000);
   }
 
@@ -3368,8 +3385,14 @@ async function commitExpense(name, amount, motive) {
 }
 
 function getRecordedToast(name, amount, motive, isEscaping) {
-  const toasts = [
-    `£${amount} for "${name}." Recorded, without judgement.`,
+  const cur = getCurrency();
+  const toasts = isZh ? [
+    `${cur}${amount}，記下了。`,
+    `「${name}」已加入記錄。${isEscaping ? '七天後我們會再問你一次。' : ''}`,
+    `又一筆。帳本在增長。`,
+    `已記錄。`,
+  ] : [
+    `${cur}${amount} for "${name}." Recorded, without judgement.`,
     `"${name}" has been added to the record. ${isEscaping ? 'We\'ll check in with you in seven days.' : ''}`,
     `Another entry. The ledger grows.`,
     `Duly noted.`,
@@ -3397,7 +3420,7 @@ function updateStats() {
     document.getElementById('stat-impulse').textContent = '—';
     document.getElementById('stat-forgotten').textContent = '—';
   } else {
-    document.getElementById('stat-total').textContent = `£${total.toLocaleString()}`;
+    document.getElementById('stat-total').textContent = `${getCurrency()}${total.toLocaleString()}`;
     document.getElementById('stat-total-label').innerHTML = 'spent<br>this month';
     document.getElementById('stat-hours').textContent = `${hours}h`;
     document.getElementById('stat-impulse').textContent = `${escapingPct}%`;
@@ -3468,7 +3491,7 @@ function renderExpenses() {
         <div class="expense-top">
           <div class="expense-name">${esc(e.name)}</div>
           <div style="display:flex; align-items:center; gap:12px;">
-            <div class="expense-amount">£${e.amount.toLocaleString()}</div>
+            <div class="expense-amount">${getCurrency()}${e.amount.toLocaleString()}</div>
             <button class="expense-delete" onclick="deleteExpense('${esc(e.id)}')" title="Delete">×</button>
           </div>
         </div>
@@ -3502,8 +3525,8 @@ function renderWeekly() {
 
   const narrative = total > 0
     ? isZh
-      ? `${state.longing ? `你說過，你最不想錯過的是 <em>「${esc(state.longing)}」</em>。` : ''}這個月，你花了 <strong>£${total.toLocaleString()}</strong>。其中 <strong>£${escapingAmt.toLocaleString()}（${escapingPct}%）</strong>是在試圖讓自己感覺好一點的時候花掉的。錢已經沒了。至於感覺有沒有好一點，又是另一回事了。`
-      : `${state.longing ? `You said the one thing you most dread missing is <em>${esc(state.longing)}</em>. ` : ''}This month, you have spent <strong>£${total.toLocaleString()}</strong>. Of that, <strong>£${escapingAmt.toLocaleString()} (${escapingPct}%)</strong> was spent whilst trying to feel better about something. The money has gone. Whether the feeling improved is another matter entirely.`
+      ? `${state.longing ? `你說過，你最不想錯過的是 <em>「${esc(state.longing)}」</em>。` : ''}這個月，你花了 <strong>${getCurrency()}${total.toLocaleString()}</strong>。其中 <strong>${getCurrency()}${escapingAmt.toLocaleString()}（${escapingPct}%）</strong>是在試圖讓自己感覺好一點的時候花掉的。錢已經沒了。至於感覺有沒有好一點，又是另一回事了。`
+      : `${state.longing ? `You said the one thing you most dread missing is <em>${esc(state.longing)}</em>. ` : ''}This month, you have spent <strong>${getCurrency()}${total.toLocaleString()}</strong>. Of that, <strong>${getCurrency()}${escapingAmt.toLocaleString()} (${escapingPct}%)</strong> was spent whilst trying to feel better about something. The money has gone. Whether the feeling improved is another matter entirely.`
     : isZh ? '本月尚無記錄，先誠實地記下一筆吧。' : 'Nothing recorded yet this month. Either you have spent nothing, or you have not been paying attention. Both are worth knowing. Begin by recording something honest.';
 
   document.getElementById('weekly-narrative').innerHTML = narrative;
@@ -3522,11 +3545,11 @@ function renderAnnual() {
 
   document.getElementById('annual-data').innerHTML = total > 0
     ? isZh
-      ? `你今年花了 <strong>£${total.toLocaleString()}</strong>，相當於你 <strong>${hours} 個小時</strong>的人生。<br><br>
+      ? `你今年花了 <strong>${getCurrency()}${total.toLocaleString()}</strong>，相當於你 <strong>${hours} 個小時</strong>的人生。<br><br>
          其中 <strong>${escapingPct}%</strong> 是在逃避什麼的時候花掉的。<br><br>
          在你重新檢視過的消費裡，<strong>${forgottenPct}%</strong> 是你已經忘記的。<br><br>
          ${state.longing ? `你說過你最不想錯過的是：<em>「${esc(state.longing)}」</em>。而上面的數字，是你實際選擇的。` : ''}`
-      : `You have spent <strong>£${total.toLocaleString()}</strong> this year — the equivalent of <strong>${hours} hours</strong> of your life.<br><br>
+      : `You have spent <strong>${getCurrency()}${total.toLocaleString()}</strong> this year — the equivalent of <strong>${hours} hours</strong> of your life.<br><br>
          <strong>${escapingPct}%</strong> of it was spent whilst escaping something.<br><br>
          Of the purchases you've revisited, <strong>${forgottenPct}%</strong> were ones you'd already forgotten.<br><br>
          ${state.longing ? `The thing you said you most dreaded missing was: <em>"${esc(state.longing)}"</em>. The numbers above are what you chose instead.` : ''}`
@@ -3554,7 +3577,7 @@ function checkFollowup() {
   const now = Date.now();
   const due = state.followupQueue.find(f => f.dueDate <= now && f.answered !== true);
   if (due) {
-    document.getElementById('followup-item').textContent = `"${due.name}" — £${due.amount}`;
+    document.getElementById('followup-item').textContent = `"${due.name}" — ${getCurrency()}${due.amount}`;
     document.getElementById('followup-modal').classList.add('open');
     window._currentFollowup = due;
   }
