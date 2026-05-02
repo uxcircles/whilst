@@ -602,6 +602,179 @@ footer {
   margin: 0 auto;
 }
 
+/* ── APP MOCKUP WIDE ── */
+.app-mockup-wide {
+  background: #0d0d0b;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 40px 80px rgba(0,0,0,0.18), 0 0 0 1px rgba(255,255,255,0.06);
+  font-family: 'DM Mono', monospace;
+}
+
+.app-mockup-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 28px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.app-mockup-wordmark {
+  font-family: 'Newsreader', serif;
+  font-size: 16px;
+  color: rgba(245,240,232,0.9);
+  letter-spacing: 0.06em;
+}
+
+.app-mockup-tabs {
+  display: flex;
+  gap: 24px;
+}
+
+.app-tab {
+  font-size: 10px;
+  letter-spacing: 2.5px;
+  color: rgba(245,240,232,0.3);
+  cursor: default;
+  padding-bottom: 2px;
+}
+
+.app-tab--active {
+  color: rgba(245,240,232,0.85);
+  border-bottom: 1px solid #c8a96e;
+}
+
+.app-mockup-body {
+  padding: 28px 28px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.app-north-star {
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  padding-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.app-ns-label {
+  font-size: 9px;
+  letter-spacing: 2.5px;
+  color: rgba(245,240,232,0.3);
+}
+
+.app-ns-value {
+  font-family: 'Newsreader', serif;
+  font-size: 20px;
+  font-style: italic;
+  color: rgba(245,240,232,0.85);
+}
+
+.app-ns-meta {
+  font-size: 10px;
+  color: rgba(245,240,232,0.3);
+  letter-spacing: 1px;
+  margin-top: 2px;
+}
+
+.app-ns-meta span {
+  color: rgba(245,240,232,0.25);
+  font-size: 9px;
+  letter-spacing: 1.5px;
+}
+
+.app-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.app-stat {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 8px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.app-stat-num {
+  font-family: 'Newsreader', serif;
+  font-size: 28px;
+  color: rgba(245,240,232,0.85);
+  font-weight: 400;
+}
+
+.app-stat-label {
+  font-size: 8px;
+  letter-spacing: 1.5px;
+  color: rgba(245,240,232,0.3);
+  line-height: 1.6;
+}
+
+.app-judgement {
+  font-family: 'Newsreader', serif;
+  font-style: italic;
+  font-size: 12px;
+  color: rgba(245,240,232,0.35);
+  text-align: center;
+  line-height: 1.7;
+  padding: 0 12px;
+}
+
+.app-ledger-label {
+  font-size: 9px;
+  letter-spacing: 2.5px;
+  color: rgba(245,240,232,0.25);
+}
+
+.app-ledger-entry {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 4px;
+}
+
+.app-ledger-left {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.app-ledger-name {
+  font-family: 'Newsreader', serif;
+  font-size: 16px;
+  color: rgba(245,240,232,0.8);
+}
+
+.app-ledger-sub {
+  font-size: 9px;
+  letter-spacing: 0.5px;
+  color: rgba(245,240,232,0.3);
+  line-height: 1.6;
+  max-width: 480px;
+}
+
+.app-ledger-tag {
+  display: inline-block;
+  font-size: 8px;
+  letter-spacing: 1.5px;
+  color: rgba(245,240,232,0.25);
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 3px 8px;
+}
+
+.app-ledger-amount {
+  font-family: 'Newsreader', serif;
+  font-size: 16px;
+  color: rgba(245,240,232,0.6);
+  white-space: nowrap;
+}
+
 .mid-image-inner {
   display: flex;
   flex-direction: column;
@@ -741,10 +914,49 @@ footer {
 <!-- MIRROR SCREENSHOT -->
 <div class="mid-image reveal">
   <div class="mid-image-inner">
-    <!-- SCREENSHOT: Mirror / Now tab showing stats and north star card (~1200×800px recommended) -->
-    <div class="img-placeholder img-placeholder--wide">
-      <span>App interface</span>
-      <span class="img-ph-note">Replace with: screenshot of Now tab or Mirror tab</span>
+    <div class="app-mockup-wide">
+      <div class="app-mockup-bar">
+        <span class="app-mockup-wordmark">Whilst</span>
+        <div class="app-mockup-tabs">
+          <span class="app-tab app-tab--active">NOW</span>
+          <span class="app-tab">MIRROR</span>
+        </div>
+      </div>
+      <div class="app-mockup-body">
+        <div class="app-north-star">
+          <div class="app-ns-label">YOUR NORTH STAR</div>
+          <div class="app-ns-value">Time with someone I love</div>
+          <div class="app-ns-meta">30 <span>days remaining with my partner</span></div>
+        </div>
+        <div class="app-stats-grid">
+          <div class="app-stat">
+            <div class="app-stat-num">£120</div>
+            <div class="app-stat-label">SPENT<br>THIS MONTH</div>
+          </div>
+          <div class="app-stat">
+            <div class="app-stat-num">7.2h</div>
+            <div class="app-stat-label">HOURS OF YOUR<br>LIFE EXCHANGED</div>
+          </div>
+          <div class="app-stat">
+            <div class="app-stat-num">100%</div>
+            <div class="app-stat-label">SPENT WHILST<br>ESCAPING</div>
+          </div>
+          <div class="app-stat">
+            <div class="app-stat-num">0%</div>
+            <div class="app-stat-label">ALREADY<br>FORGOTTEN</div>
+          </div>
+        </div>
+        <div class="app-judgement">This is not a judgement. It is information. What you do with it is entirely yours.</div>
+        <div class="app-ledger-label">THE LEDGER</div>
+        <div class="app-ledger-entry">
+          <div class="app-ledger-left">
+            <div class="app-ledger-name">Luxury bag</div>
+            <div class="app-ledger-sub">7.2 hours of your life exchanged · moved you 133.3% further from what matters</div>
+            <div class="app-ledger-tag">A TREAT TO MYSELF</div>
+          </div>
+          <div class="app-ledger-amount">£120</div>
+        </div>
+      </div>
     </div>
     <p class="mid-image-caption" id="mid-caption">The ledger does not lie. The question is whether you are listening.</p>
   </div>

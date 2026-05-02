@@ -326,6 +326,8 @@ body::after {
   cursor: pointer;
   padding: 16px 0;
   transition: color 0.3s;
+  text-decoration: none;
+  display: inline-block;
 }
 .btn-back:hover { color: var(--dim); }
 
@@ -1357,7 +1359,8 @@ input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.3); }
     <textarea class="dark-textarea" id="ob1-answer" placeholder="Write freely. There are no correct answers here." rows="4" id="ob1-answer-ta" oninput="checkOb1()" style="display:none; margin-top:20px;"></textarea>
     <div class="ob1-hint" id="ob1-hint" style="display:none;"></div>
 
-    <div class="onboard-nav onboard-nav-right" id="nav-ob1">
+    <div class="onboard-nav" id="nav-ob1">
+      <button class="btn-back" onclick="goTo('screen-splash')"><span id="back-ob1">← Back</span></button>
       <button class="btn-next" id="ob1-next" onclick="goToOb2()">
         <span>Continue</span>
         <span class="btn-next-arrow">→</span>
@@ -1557,7 +1560,7 @@ input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.3); }
       <!-- Account -->
       <div class="begin-again" id="account-section">
         <div class="begin-again-prompt" id="account-prompt">Your records exist only on this device.</div>
-        <button class="begin-again-btn" id="account-btn" onclick="openAuthModal()">Create an account to keep them →</button>
+        <button class="begin-again-btn" id="account-btn" onclick="openAuthModal(null, 'signup')">Create an account to keep them →</button>
       </div>
 
     </div>
@@ -2014,6 +2017,8 @@ function applyTranslations() {
   if (splashEyebrow) splashEyebrow.textContent = isZh ? '時間 · 金錢 · 生命' : 'Time · Money · Life';
 
   // Back buttons
+  const backOb1 = document.getElementById('back-ob1');
+  if (backOb1) { backOb1.textContent = isZh ? '← 返回首頁' : '← Back'; backOb1.href = 'index.html'; }
   const backOb2 = document.getElementById('back-ob2');
   if (backOb2) backOb2.textContent = isZh ? '← 返回' : '← Back';
   const backOb3 = document.getElementById('back-ob3');
@@ -2331,7 +2336,7 @@ function togglePassword(id, btn) {
   btn.textContent = isPassword ? t.auth_hide : t.auth_show;
 }
 
-function openAuthModal(reason) {
+function openAuthModal(reason, defaultTab) {
   if (!db) { showToast(isZh ? '雲端同步在此環境中不可用。' : 'Cloud sync is not available in this environment.'); return; }
   if (currentUser) {
     showToast(`Already signed in as ${currentUser.email}`);
@@ -2339,7 +2344,7 @@ function openAuthModal(reason) {
   }
   document.getElementById('auth-reason').textContent = reason || 'Create a free account to save your records across devices.';
   document.getElementById('auth-modal').classList.add('open');
-  document.getElementById('auth-tab-signin').click();
+  document.getElementById(defaultTab === 'signup' ? 'auth-tab-signup' : 'auth-tab-signin').click();
 }
 
 function closeAuthModal() {
@@ -3288,9 +3293,7 @@ async function commitExpense(name, amount, motive) {
 
   localStorage.setItem('whilst_exp', JSON.stringify(state.expenses));
 
-  // Sync to Supabase if signed in
-  await saveExpenseToDb(exp);
-
+  // Close modal and update UI immediately — don't block on DB
   document.getElementById('exp-name').value = '';
   document.getElementById('exp-amount').value = '';
   document.querySelectorAll('.motive-btn').forEach(b => b.classList.remove('selected'));
@@ -3308,6 +3311,9 @@ async function commitExpense(name, amount, motive) {
       openAuthModal('Would you like to save your records across devices?');
     }, 2000);
   }
+
+  // Sync to Supabase in background — UI already updated above
+  saveExpenseToDb(exp);
 }
 
 function getRecordedToast(name, amount, motive, isEscaping) {
