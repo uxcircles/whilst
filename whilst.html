@@ -528,7 +528,6 @@ input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.3); }
   width: 100%;
   overflow-y: auto;
 }
-}
 
 /* ── DASHBOARD ── */
 .north-star {
@@ -1374,7 +1373,7 @@ input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.3); }
       <button class="longing-opt" onclick="selectLonging(this, 'other')" data-type="other">Something else</button>
     </div>
 
-    <textarea class="dark-textarea" id="ob1-answer" placeholder="Write freely. There are no correct answers here." rows="4" id="ob1-answer-ta" oninput="checkOb1()" style="display:none; margin-top:20px;"></textarea>
+    <textarea class="dark-textarea" id="ob1-answer" placeholder="Write freely. There are no correct answers here." rows="4" oninput="checkOb1()" style="display:none; margin-top:20px;"></textarea>
     <div class="ob1-hint" id="ob1-hint" style="display:none;"></div>
 
     <div class="onboard-nav" id="nav-ob1">
@@ -1587,7 +1586,7 @@ input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.3); }
 </div>
 
 <!-- BEGIN AGAIN MODAL -->
-<div class="followup-modal" id="begin-again-modal">
+<div class="followup-modal" id="begin-again-modal" role="dialog" aria-modal="true">
   <div class="followup-inner">
     <div class="followup-label">Before you begin again</div>
     <div class="followup-q">Are you starting again because something has genuinely changed, or because you are avoiding what the numbers are telling you?</div>
@@ -1599,9 +1598,9 @@ input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.3); }
 </div>
 
 <!-- AUTH MODAL -->
-<div class="followup-modal" id="auth-modal">
+<div class="followup-modal" id="auth-modal" role="dialog" aria-modal="true">
   <div class="followup-inner" style="max-width:380px; position:relative;">
-    <button class="record-modal-close" onclick="closeAuthModal()" style="position:absolute; top:16px; right:12px;">✕</button>
+    <button class="record-modal-close" onclick="closeAuthModal()" style="position:absolute; top:16px; right:12px;" aria-label="Close">✕</button>
     <div class="followup-label">Your records</div>
     <div class="followup-q" style="font-size:16px;" id="auth-reason">Create a free account to save your records across devices.</div>
 
@@ -1613,12 +1612,12 @@ input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.3); }
     <div id="auth-signin-form">
       <div class="field-group" style="margin-bottom:16px;">
         <label id="auth-email-label-signin">Email</label>
-        <input class="dark-input" id="signin-email" type="email" placeholder="your@email.com" style="margin-top:8px;">
+        <input class="dark-input" id="signin-email" type="email" placeholder="your@email.com" style="margin-top:8px;" autocomplete="email">
       </div>
       <div class="field-group" style="margin-bottom:24px;">
         <label id="auth-password-label-signin">Password</label>
         <div class="password-wrap">
-          <input class="dark-input" id="signin-password" type="password" placeholder="••••••••">
+          <input class="dark-input" id="signin-password" type="password" placeholder="••••••••" autocomplete="current-password">
           <button class="password-toggle" type="button" onclick="togglePassword('signin-password', this)" tabindex="-1">show</button>
         </div>
       </div>
@@ -1628,12 +1627,12 @@ input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.3); }
     <div id="auth-signup-form" style="display:none;">
       <div class="field-group" style="margin-bottom:16px;">
         <label id="auth-email-label-signup">Email</label>
-        <input class="dark-input" id="signup-email" type="email" placeholder="your@email.com" style="margin-top:8px;">
+        <input class="dark-input" id="signup-email" type="email" placeholder="your@email.com" style="margin-top:8px;" autocomplete="email">
       </div>
       <div class="field-group" style="margin-bottom:24px;">
         <label id="auth-password-label-signup">Password</label>
         <div class="password-wrap">
-          <input class="dark-input" id="signup-password" type="password" placeholder="At least 6 characters">
+          <input class="dark-input" id="signup-password" type="password" placeholder="At least 6 characters" autocomplete="new-password">
           <button class="password-toggle" type="button" onclick="togglePassword('signup-password', this)" tabindex="-1">show</button>
         </div>
       </div>
@@ -1648,11 +1647,11 @@ input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.3); }
 <button class="fab" id="fab-record" onclick="openRecordModal()"><span id="fab-label">+ Record</span></button>
 
 <!-- RECORD MODAL -->
-<div class="record-modal" id="record-modal">
+<div class="record-modal" id="record-modal" role="dialog" aria-modal="true">
   <div class="record-modal-inner">
     <div class="record-modal-header">
       <div class="record-modal-title">Where has your life been going?</div>
-      <button class="record-modal-close" onclick="closeRecordModal()">✕</button>
+      <button class="record-modal-close" onclick="closeRecordModal()" aria-label="Close">✕</button>
     </div>
 
     <div class="record-modal-body">
@@ -1678,7 +1677,7 @@ input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.3); }
 </div>
 
 <!-- 7-DAY FOLLOW UP MODAL -->
-<div class="followup-modal" id="followup-modal">
+<div class="followup-modal" id="followup-modal" role="dialog" aria-modal="true">
   <div class="followup-inner">
     <div class="followup-label" id="followup-label-el">Seven days later</div>
     <div class="followup-q" id="followup-q-el">You bought something whilst feeling rather low.</div>
@@ -1693,14 +1692,14 @@ input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.3); }
 
 <!-- TOAST -->
 <!-- SALARY MODAL -->
-<div class="followup-modal" id="salary-modal">
+<div class="followup-modal" id="salary-modal" role="dialog" aria-modal="true">
   <div class="followup-inner">
     <div class="followup-label">One thing first</div>
     <div class="followup-q">What is your approximate monthly salary?</div>
     <div style="font-size:13px; font-style:italic; letter-spacing:0.03em; color:var(--muted); margin-bottom:24px; line-height:1.7;">
       Used only to calculate how many hours of your life each purchase costs. Stored locally. Never shared.
     </div>
-    <input class="dark-input" id="monthly-salary" type="number" id="salary-input" placeholder="e.g. 3000" min="1" style="margin-bottom:24px;">
+    <input class="dark-input" id="monthly-salary" type="number" placeholder="e.g. 3000" min="1" style="margin-bottom:24px;">
     <div class="followup-options">
       <button class="submit-expense" onclick="saveSalary()">Continue</button>
       <button class="begin-again-btn" onclick="skipSalary()" style="display:block; width:100%; text-align:center; margin-top:12px;">Skip — I'd rather not say</button>
@@ -1710,7 +1709,7 @@ input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.3); }
 
 <div class="toast" id="toast">
   <span id="toast-msg"></span>
-  <button class="toast-close" onclick="clearTimeout(window._toastTimer);document.getElementById('toast').classList.remove('show')">✕</button>
+  <button class="toast-close" onclick="clearTimeout(window._toastTimer);document.getElementById('toast').classList.remove('show')" aria-label="Close">✕</button>
 </div>
 
 <script>
@@ -2156,7 +2155,7 @@ function applyTranslations() {
   if (ob3Sub) ob3Sub.textContent = t.ob3_sub;
   const ob3SalaryQ = document.getElementById('ob3-salary-q');
   if (ob3SalaryQ) ob3SalaryQ.textContent = t.ob3_salary_q;
-  const salaryInput = document.getElementById('salary-input');
+  const salaryInput = document.getElementById('monthly-salary');
   if (salaryInput) salaryInput.placeholder = t.ph_salary;
 
   // Nav
@@ -2541,7 +2540,6 @@ let state = {
   longing: '',
   windowPerson: '',
   windowDays: 0,
-  windowAge: 0,
   lifePercent: 40,
   expenses: JSON.parse(localStorage.getItem('whilst_exp') || '[]'),
   weeklyAnswers: JSON.parse(localStorage.getItem('whilst_weekly') || '[]'),
@@ -3077,7 +3075,6 @@ function calcWindow() {
   const totalDays = Math.round(yearsLeft * daysPerYear);
 
   state.windowDays = totalDays;
-  state.windowAge = age;
   state.windowPerson = state.selectedRelation || 'them';
 
   document.getElementById('window-number').textContent = totalDays.toLocaleString() + ' days';
@@ -3561,8 +3558,7 @@ function updateAnnualSlider(val) {
   const was = state.lifePercent;
   const diff = val - was;
   let note = '';
-  if (diff > 10) note = t.annual_slider_up;
-  else if (diff > 0) note = t.annual_slider_up;
+  if (diff > 0) note = t.annual_slider_up;
   else if (diff === 0) note = t.annual_slider_same;
   else if (diff > -10) note = t.annual_slider_down;
   else note = t.annual_slider_down;
@@ -3660,6 +3656,16 @@ updateSlider(40);
 const initSlider = document.getElementById('life-slider');
 if (initSlider) initSlider.style.background = `linear-gradient(to right, var(--accent) 0%, var(--accent) 40%, var(--border) 40%, var(--border) 100%)`;
 (async () => { await initAuth(); })();
+
+document.addEventListener('keydown', function(e) {
+  if (e.key !== 'Escape') return;
+  if (document.getElementById('record-modal')?.classList.contains('open')) { closeRecordModal(); return; }
+  if (document.getElementById('auth-modal')?.classList.contains('open')) { closeAuthModal(); return; }
+  if (document.getElementById('salary-modal')?.classList.contains('open')) {
+    document.getElementById('salary-modal').classList.remove('open');
+    return;
+  }
+});
 </script>
 </body>
 </html>
