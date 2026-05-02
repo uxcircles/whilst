@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Whilst — Time, Money, Life</title>
+<link rel="icon" type="image/png" href="favicon.png">
+<meta name="description" content="Not a finance app. A mirror. See where your money goes — and what it reveals about the life you're actually living.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://whilst.work">
+<meta property="og:title" content="Whilst — Time, Money, Life">
+<meta property="og:description" content="Not a finance app. A mirror.">
+<meta property="og:image" content="https://raw.githubusercontent.com/uxcircles/whilst/main/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/uxcircles/whilst/main/og.png">
+<link rel="canonical" href="https://whilst.work">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,300;1,6..72,400;1,6..72,500&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --paper: #f7f3ec;
+  --paper-dark: #ede8df;
+  --ink: #1a1a18;
+  --ink-dim: #6b6558;
+  --ink-muted: #a09890;
+  --accent: #c8a96e;
+  --accent-dark: #a8893e;
+  --void: #0a0a0a;
+  --border: rgba(26,26,24,0.1);
+  --border-strong: rgba(26,26,24,0.2);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'Newsreader', serif;
+  font-size: 18px;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* ── GRAIN ── */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9;
+}
+
+/* ── NAV ── */
+nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 40px;
+  z-index: 100;
+  background: rgba(247, 243, 236, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(26, 26, 24, 0.06);
+}
+
+.nav-logo {
+  font-family: 'Newsreader', serif;
+  font-size: 18px;
+  font-weight: 400;
+  color: var(--ink);
+  text-decoration: none;
+  letter-spacing: 0.02em;
+}
+
+.nav-logo span {
+  font-size: 11px;
+  font-family: 'DM Mono', monospace;
+  letter-spacing: 2px;
+  color: var(--ink-dim);
+  margin-left: 12px;
+  text-transform: uppercase;
+}
+
+.nav-cta {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--ink);
+  text-decoration: none;
+  border-bottom: 1px solid var(--border-strong);
+  padding-bottom: 2px;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.nav-cta:hover {
+  color: var(--accent-dark);
+  border-color: var(--accent-dark);
+}
+
+/* ── HERO ── */
+.hero {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  gap: 64px;
+  align-items: center;
+  padding: 120px 7vw 80px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.hero-left {
+  display: flex;
+  flex-direction: column;
+}
+
+.hero-right {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-mockup {
+  width: 100%;
+  max-width: 280px;
+  aspect-ratio: 9 / 18;
+  background: var(--void);
+  border-radius: 32px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 40px 80px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.08);
+}
+
+.hero-mockup-inner {
+  position: absolute;
+  inset: 12px;
+  border-radius: 22px;
+  background: #0a0a0a;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 32px 24px;
+}
+
+.mockup-logo {
+  font-family: 'Newsreader', serif;
+  font-size: 22px;
+  font-weight: 400;
+  color: #f5f0e8;
+  letter-spacing: 0.08em;
+}
+
+.mockup-line {
+  width: 40px;
+  height: 1px;
+  background: #c8a96e;
+  opacity: 0.6;
+}
+
+.mockup-question {
+  font-family: 'Newsreader', serif;
+  font-size: 11px;
+  font-style: italic;
+  color: rgba(245,240,232,0.5);
+  text-align: center;
+  line-height: 1.7;
+  letter-spacing: 0.02em;
+}
+
+.mockup-options {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.mockup-opt {
+  border: 1px solid rgba(245,240,232,0.12);
+  padding: 8px 12px;
+  font-family: 'Newsreader', serif;
+  font-size: 10px;
+  color: rgba(245,240,232,0.6);
+  letter-spacing: 0.02em;
+}
+
+.mockup-opt.active {
+  border-color: #c8a96e;
+  color: #c8a96e;
+}
+
+.hero-eyebrow {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  margin-bottom: 28px;
+  opacity: 0;
+  animation: fadeUp 1s ease 0.2s forwards;
+}
+
+.hero-title {
+  font-size: clamp(40px, 5vw, 72px);
+  font-weight: 400;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  margin-bottom: 28px;
+  opacity: 0;
+  animation: fadeUp 1s ease 0.4s forwards;
+}
+
+.mobile-br { display: none; }
+
+@media (max-width: 768px) {
+  .mobile-br { display: block; }
+}
+
+.hero-title em {
+  font-style: italic;
+  color: var(--ink-dim);
+}
+
+.hero-subtitle {
+  font-size: 17px;
+  font-weight: 300;
+  color: var(--ink-dim);
+  line-height: 1.75;
+  margin-bottom: 48px;
+  opacity: 0;
+  animation: fadeUp 1s ease 0.6s forwards;
+}
+
+.hero-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-decoration: none;
+  padding: 14px 28px;
+  transition: background 0.3s;
+  opacity: 0;
+  animation: fadeUp 1s ease 0.8s forwards;
+  align-self: flex-start;
+}
+
+.hero-cta:hover { background: var(--accent-dark); }
+
+.hero-cta-arrow { transition: transform 0.3s; }
+.hero-cta:hover .hero-cta-arrow { transform: translateX(4px); }
+
+.hero-footnote {
+  margin-top: 20px;
+  font-size: 13px;
+  font-style: italic;
+  color: var(--ink-muted);
+  opacity: 0;
+  animation: fadeUp 1s ease 1s forwards;
+}
+
+@media (max-width: 768px) {
+  .hero {
+    grid-template-columns: 1fr;
+    gap: 48px;
+    padding: 100px 24px 60px;
+    min-height: auto;
+  }
+  .hero-right { display: none; }
+}
+
+/* ── DIVIDER LINE ── */
+.divider {
+  width: 100%;
+  height: 1px;
+  background: var(--border);
+  margin: 0 40px;
+  width: calc(100% - 80px);
+}
+
+/* ── INSIGHT SECTION ── */
+.insight {
+  padding: 120px 7vw;
+  max-width: 1400px;
+  margin: 0 auto;
+  border-top: 1px solid var(--border);
+}
+
+.insight-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  margin-bottom: 48px;
+}
+
+.insight-quote {
+  font-size: clamp(26px, 4vw, 42px);
+  font-weight: 300;
+  line-height: 1.35;
+  color: var(--ink);
+  max-width: 700px;
+  margin-bottom: 40px;
+}
+
+.insight-quote strong {
+  font-weight: 400;
+  font-style: italic;
+  color: var(--accent-dark);
+}
+
+.insight-body {
+  font-size: 17px;
+  color: var(--ink-dim);
+  max-width: 560px;
+  line-height: 1.75;
+}
+
+.insight-body p + p {
+  margin-top: 20px;
+}
+
+/* ── FEATURES SECTION ── */
+.features {
+  padding: 120px 7vw;
+  max-width: 1400px;
+  margin: 0 auto;
+  border-top: 1px solid var(--border);
+}
+
+.features-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  margin-bottom: 72px;
+}
+
+.feature-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.feature-item {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  gap: 32px;
+  padding: 40px 0;
+  border-top: 1px solid var(--border);
+  align-items: start;
+}
+
+.feature-item:last-child {
+  border-bottom: 1px solid var(--border);
+}
+
+.feature-number {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--ink-muted);
+  padding-top: 6px;
+}
+
+.feature-content {}
+
+.feature-title {
+  font-size: 22px;
+  font-weight: 400;
+  margin-bottom: 12px;
+  color: var(--ink);
+}
+
+.feature-title em {
+  font-style: italic;
+  color: var(--ink-dim);
+}
+
+.feature-desc {
+  font-size: 16px;
+  color: var(--ink-dim);
+  line-height: 1.7;
+  max-width: 480px;
+}
+
+/* ── QUESTION SECTION ── */
+.question-section {
+  padding: 120px 7vw;
+  background: var(--ink);
+  color: var(--paper);
+  position: relative;
+  overflow: hidden;
+}
+
+.question-section::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+  pointer-events: none;
+}
+
+.question-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.question-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: rgba(247,243,236,0.4);
+  margin-bottom: 48px;
+}
+
+.question-text {
+  font-size: clamp(28px, 5vw, 52px);
+  font-weight: 300;
+  line-height: 1.3;
+  color: var(--paper);
+  max-width: 640px;
+  margin-bottom: 24px;
+}
+
+.question-sub {
+  font-size: 16px;
+  font-style: italic;
+  color: rgba(247,243,236,0.5);
+  max-width: 480px;
+  line-height: 1.7;
+  margin-bottom: 56px;
+}
+
+.question-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-decoration: none;
+  padding: 16px 32px;
+  transition: background 0.3s, color 0.3s;
+}
+
+.question-cta:hover {
+  background: var(--accent);
+  color: var(--void);
+}
+
+/* ── SUBSTACK SECTION ── */
+.substack-section {
+  padding: 120px 7vw;
+  max-width: 1400px;
+  margin: 0 auto;
+  border-top: 1px solid var(--border);
+}
+
+.substack-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  margin-bottom: 40px;
+}
+
+.substack-card {
+  border: 1px solid var(--border-strong);
+  padding: 48px;
+  transition: border-color 0.3s;
+  text-decoration: none;
+  display: block;
+}
+
+.substack-card:hover {
+  border-color: var(--accent);
+}
+
+.substack-card-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  margin-bottom: 20px;
+}
+
+.substack-card-title {
+  font-size: clamp(20px, 3vw, 28px);
+  font-weight: 400;
+  color: var(--ink);
+  line-height: 1.35;
+  margin-bottom: 16px;
+}
+
+.substack-card-desc {
+  font-size: 16px;
+  color: var(--ink-dim);
+  font-style: italic;
+  line-height: 1.65;
+  max-width: 480px;
+}
+
+.substack-card-arrow {
+  margin-top: 32px;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  transition: color 0.2s;
+}
+
+.substack-card:hover .substack-card-arrow {
+  color: var(--accent-dark);
+}
+
+/* ── FOOTER ── */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 48px 7vw;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.footer-name {
+  font-size: 15px;
+  color: var(--ink-dim);
+}
+
+.footer-name span {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--ink-muted);
+  margin-left: 12px;
+  text-transform: uppercase;
+}
+
+.footer-link {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.footer-link:hover { color: var(--ink-dim); }
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── MID IMAGE ── */
+.mid-image {
+  padding: 0 40px 80px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.mid-image-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.mid-image-caption {
+  font-size: 14px;
+  font-style: italic;
+  color: var(--ink-muted);
+  text-align: center;
+}
+
+/* ── MOBILE ── */
+@media (max-width: 640px) {
+  nav { padding: 20px 24px; }
+  .nav-logo span { display: none; }
+
+  .hero { padding: 100px 24px 60px; }
+  .hero-inner { grid-template-columns: 1fr; gap: 40px; }
+  .hero-image { display: none; }
+  .mid-image { padding: 0 24px 60px; }
+  .insight { padding: 80px 24px; }
+  .features { padding: 80px 24px; }
+  .question-section { padding: 80px 24px; }
+  .substack-section { padding: 80px 24px; }
+  footer { padding: 40px 24px; flex-direction: column; gap: 16px; align-items: flex-start; }
+
+  .feature-item { grid-template-columns: 1fr; gap: 8px; }
+  .feature-number { padding-top: 0; }
+
+  .substack-card { padding: 32px 24px; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="/" class="nav-logo" id="nav-logo">
+    Whilst
+    <span id="nav-tagline">與此同時</span>
+  </a>
+  <a href="whilst.html" class="nav-cta" id="nav-enter">Enter →</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-left">
+    <div class="hero-eyebrow" id="hero-eyebrow">Time · Money · Life</div>
+    <h1 class="hero-title" id="hero-title">
+      This is not<br class="mobile-br"> a finance app.<br><em>It is a mirror.</em>
+    </h1>
+    <p class="hero-subtitle" id="hero-subtitle">
+      Most people spend the most money on the things they care about least.
+      Most people spend the most time longing for the things they won't spend money on.
+    </p>
+    <a href="whilst.html" class="hero-cta" id="hero-cta">
+      <span id="hero-cta-text">Begin</span>
+      <span class="hero-cta-arrow">→</span>
+    </a>
+    <p class="hero-footnote" id="hero-footnote">
+      You have been rather generous with your life's savings. Unknowingly, of course.
+    </p>
+  </div>
+
+  <div class="hero-right">
+    <div class="hero-mockup">
+      <div class="hero-mockup-inner">
+        <div class="mockup-logo">Whilst</div>
+        <div class="mockup-line"></div>
+        <p class="mockup-question">What is the one thing in life you most dread missing?</p>
+        <div class="mockup-options">
+          <div class="mockup-opt active">Time with someone I love</div>
+          <div class="mockup-opt">The freedom to leave</div>
+          <div class="mockup-opt">Work I actually love</div>
+          <div class="mockup-opt">Something else</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INSIGHT -->
+<section class="insight">
+  <div class="insight-label reveal" id="insight-label">The question behind the numbers</div>
+  <h2 class="insight-quote reveal" id="insight-quote">
+    Your spending is not just a record of what you bought.<br>
+    It is a record of <strong>who you are becoming.</strong>
+  </h2>
+  <div class="insight-body reveal" id="insight-body">
+    <p id="insight-p1">Whilst records where your money goes — and converts every purchase into what it actually cost you: hours of your finite life, days with the people who matter, distance from the thing you said you most wanted.</p>
+    <p id="insight-p2">Not to judge. Not to optimise. To make the invisible, visible.</p>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features">
+  <div class="features-label reveal" id="features-label">What it does</div>
+  <div class="feature-list">
+
+    <div class="feature-item reveal">
+      <div class="feature-number">01</div>
+      <div class="feature-content">
+        <div class="feature-title" id="f1-title">It asks you one honest question</div>
+        <p class="feature-desc" id="f1-desc">Before anything else: what is the one thing in your life you most dread missing? Not what you should want. Not what sounds noble. Everything that follows is calibrated to that answer.</p>
+      </div>
+    </div>
+
+    <div class="feature-item reveal">
+      <div class="feature-number">02</div>
+      <div class="feature-content">
+        <div class="feature-title" id="f2-title">It converts money into <em>time</em></div>
+        <p class="feature-desc" id="f2-desc">Every purchase is translated into hours of your life exchanged. And not just working hours — days remaining with the people you love most. The number is rarely comfortable.</p>
+      </div>
+    </div>
+
+    <div class="feature-item reveal">
+      <div class="feature-number">03</div>
+      <div class="feature-content">
+        <div class="feature-title" id="f3-title">It holds up a mirror, monthly</div>
+        <p class="feature-desc" id="f3-desc">Once a month, a single question. Not about budgets. About the life you are actually living versus the one you said you wanted. Your answers belong to no one else.</p>
+      </div>
+    </div>
+
+    <div class="feature-item reveal">
+      <div class="feature-number">04</div>
+      <div class="feature-content">
+        <div class="feature-title" id="f4-title">It remembers when you forget</div>
+        <p class="feature-desc" id="f4-desc">Seven days after a purchase made whilst escaping something, Whilst asks: do you even remember buying it? The answer tells you more than the amount ever could.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- MIRROR SCREENSHOT -->
+<div class="mid-image reveal">
+  <div class="mid-image-inner">
+    <!-- SCREENSHOT: Mirror / Now tab showing stats and north star card (~1200×800px recommended) -->
+    <div class="img-placeholder img-placeholder--wide">
+      <span>App interface</span>
+      <span class="img-ph-note">Replace with: screenshot of Now tab or Mirror tab</span>
+    </div>
+    <p class="mid-image-caption" id="mid-caption">The ledger does not lie. The question is whether you are listening.</p>
+  </div>
+</div>
+
+<!-- QUESTION SECTION -->
+<section class="question-section">
+  <div class="question-inner">
+    <div class="question-label reveal" id="q-label">The first question</div>
+    <h2 class="question-text reveal" id="q-text">What is the one thing in your life you most dread missing?</h2>
+    <p class="question-sub reveal" id="q-sub">Not what you should want. Not what sounds noble. If there is more than one, choose the one that keeps you awake at night.</p>
+    <a href="whilst.html" class="question-cta reveal" id="q-cta">
+      <span id="q-cta-text">Begin</span>
+      <span>→</span>
+    </a>
+  </div>
+</section>
+
+<!-- SUBSTACK -->
+<section class="substack-section">
+  <div class="substack-label reveal" id="sub-label">The story behind it</div>
+  <a href="https://medium.com/uxcircles/i-set-out-to-build-a-finance-app-i-built-a-mirror-instead-6b107ab2728f" class="substack-card reveal" target="_blank" rel="noopener">
+    <div class="substack-card-label" id="sub-card-label">Essay</div>
+    <div class="substack-card-title" id="sub-card-title">I set out to build a finance app. I built a mirror instead.</div>
+    <p class="substack-card-desc" id="sub-card-desc">A UI/UX designer's account of building a product with Claude — and what it asked of me along the way.</p>
+    <div class="substack-card-arrow" id="sub-card-arrow">Read on Medium →</div>
+  </a>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-name">
+    Whilst
+    <span id="footer-tagline">whilst.work</span>
+  </div>
+  <a href="whilst.html" class="footer-link" id="footer-enter">Enter the app →</a>
+</footer>
+
+<script>
+// ── i18n ──
+const userLocale = navigator.language || 'en-GB';
+const isZh = userLocale.startsWith('zh');
+
+const strings = {
+  nav_tagline:      isZh ? '與此同時' : '與此同時',
+  nav_enter:        isZh ? '進入 →' : 'Enter →',
+  hero_eyebrow:     isZh ? '時間 · 金錢 · 生命' : 'Time · Money · Life',
+  hero_title:       isZh ? '這不只是理財，<em>而是一面鏡子。</em>' : 'This is not<br>a finance app.<br><em>It is a mirror.</em>',
+  hero_subtitle:    isZh ? '大部分人花最多錢的地方，恰好是他們最不在乎的事。大部分人最渴望的事，恰好是他們捨不得花錢的地方。' : "Most people spend the most money on the things they care about least. Most people spend the most time longing for the things they won't spend money on.",
+  hero_cta:         isZh ? '啟程' : 'Begin',
+  hero_footnote:    isZh ? '你一直很慷慨地揮霍著自己的人生，只是自己無意識。' : "You have been rather generous with your life's savings. Unknowingly, of course.",
+
+  insight_label:    isZh ? '數字背後的問題' : 'The question behind the numbers',
+  insight_quote:    isZh ? '你的消費不只是記錄你買了什麼，<br>它記錄的是<strong>你正在成為什麼樣的人。</strong>' : "Your spending is not just a record of what you bought.<br>It is a record of <strong>who you are becoming.</strong>",
+  insight_p1:       isZh ? 'Whilst 記錄你的錢花到哪裡，並把每一筆消費換算成它真正的代價：你有限生命的時數、和你最在乎的人相處的天數、和你說過最想要的事之間的距離。' : "Whilst records where your money goes — and converts every purchase into what it actually cost you: hours of your finite life, days with the people who matter, distance from the thing you said you most wanted.",
+  insight_p2:       isZh ? '不是為了評判，不是為了優化，而是讓看不見的，變得看得見。' : 'Not to judge. Not to optimise. To make the invisible, visible.',
+
+  features_label:   isZh ? '它做什麼' : 'What it does',
+  f1_title:         isZh ? '它問你一個誠實的問題' : 'It asks you one honest question',
+  f1_desc:          isZh ? '在一切開始之前：你這輩子，最不想錯過的是什麼？不是你應該想要的，不是說出來好聽的。所有後續的一切，都根據你的答案而展開。' : 'Before anything else: what is the one thing in your life you most dread missing? Not what you should want. Not what sounds noble. Everything that follows is calibrated to that answer.',
+  f2_title:         isZh ? '它把金錢換算成時間' : 'It converts money into time',
+  f2_desc:          isZh ? '每一筆消費，都被換算成你付出的生命時數。不只是工時，而是和你最愛的人相處的剩餘天數。那個數字，通常不會讓你好受。' : 'Every purchase is translated into hours of your life exchanged. And not just working hours — days remaining with the people you love most. The number is rarely comfortable.',
+  f3_title:         isZh ? '它每個月為你照一次鏡子' : 'It holds up a mirror, monthly',
+  f3_desc:          isZh ? '每個月，一個問題。不是關於預算，而是關於你真正活著的生活，和你說過想要的那個，之間的距離。你寫的，只有你知道。' : 'Once a month, a single question. Not about budgets. About the life you are actually living versus the one you said you wanted. Your answers belong to no one else.',
+  f4_title:         isZh ? '它記得你忘記的事' : 'It remembers when you forget',
+  f4_desc:          isZh ? '在一筆逃避性消費的七天後，Whilst 會問你：你還記得買了什麼嗎？這個答案，比金額更能說明一切。' : 'Seven days after a purchase made whilst escaping something, Whilst asks: do you even remember buying it? The answer tells you more than the amount ever could.',
+
+  q_label:          isZh ? '第一個問題' : 'The first question',
+  q_text:           isZh ? '你這輩子，最不想錯過的是什麼？' : 'What is the one thing in your life you most dread missing?',
+  q_sub:            isZh ? '不是你應該想要的，也不是說出來好聽的。如果不只一個，選那個讓你深夜失眠的。' : 'Not what you should want. Not what sounds noble. If there is more than one, choose the one that keeps you awake at night.',
+  q_cta:            isZh ? '啟程' : 'Begin',
+
+  sub_label:        isZh ? '這個 app 背後的故事' : 'The story behind it',
+  sub_card_label:   isZh ? '文章' : 'Essay',
+  sub_card_title:   isZh ? '我只是想做一個理財 App，最後卻做了一面鏡子' : 'I set out to build a finance app. I built a mirror instead.',
+  sub_card_desc:    isZh ? '一個 UI/UX 設計師用 Claude 做產品的真實過程，以及這個過程問了我自己什麼。' : "A UI/UX designer's account of building a product with Claude — and what it asked of me along the way.",
+  sub_card_arrow:   isZh ? '在 Medium 閱讀 →' : 'Read on Medium →',
+
+  footer_enter:     isZh ? '進入 app →' : 'Enter the app →',
+  mid_caption:      isZh ? '帳本不會說謊。問題是你有沒有在聽。' : 'The ledger does not lie. The question is whether you are listening.',
+};
+
+function applyTranslations() {
+  if (!isZh) return;
+  document.documentElement.lang = 'zh-TW';
+
+  const set = (id, html) => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = html;
+  };
+
+  set('nav-tagline', strings.nav_tagline);
+  set('nav-enter', strings.nav_enter);
+  set('hero-eyebrow', strings.hero_eyebrow);
+  set('hero-title', strings.hero_title);
+  set('hero-subtitle', strings.hero_subtitle);
+  set('hero-cta-text', strings.hero_cta);
+  set('hero-footnote', strings.hero_footnote);
+
+  set('insight-label', strings.insight_label);
+  set('insight-quote', strings.insight_quote);
+  set('insight-p1', strings.insight_p1);
+  set('insight-p2', strings.insight_p2);
+
+  set('features-label', strings.features_label);
+  set('f1-title', strings.f1_title);
+  set('f1-desc', strings.f1_desc);
+  set('f2-title', strings.f2_title);
+  set('f2-desc', strings.f2_desc);
+  set('f3-title', strings.f3_title);
+  set('f3-desc', strings.f3_desc);
+  set('f4-title', strings.f4_title);
+  set('f4-desc', strings.f4_desc);
+
+  set('q-label', strings.q_label);
+  set('q-text', strings.q_text);
+  set('q-sub', strings.q_sub);
+  set('q-cta-text', strings.q_cta);
+
+  set('sub-label', strings.sub_label);
+  set('sub-card-label', strings.sub_card_label);
+  set('sub-card-title', strings.sub_card_title);
+  set('sub-card-desc', strings.sub_card_desc);
+  set('sub-card-arrow', strings.sub_card_arrow);
+
+  set('footer-enter', strings.footer_enter);
+  set('mid-caption', strings.mid_caption);
+}
+
+// ── SCROLL REVEAL ──
+function initReveal() {
+  const els = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+  els.forEach(el => observer.observe(el));
+}
+
+applyTranslations();
+initReveal();
+</script>
+</body>
+</html>

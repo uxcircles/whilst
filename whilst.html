@@ -1,0 +1,3572 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Whilst — Time, Money, Life</title>
+
+<!-- SEO -->
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="favicon.png">
+<meta name="description" content="Not a finance app. A mirror. See where your money goes — and what it reveals about the life you're actually living.">
+<meta name="author" content="Whilst">
+<link rel="canonical" href="https://whilst.work">
+
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://whilst.work">
+<meta property="og:title" content="Whilst — Time, Money, Life">
+<meta property="og:description" content="Not a finance app. A mirror. See where your money goes — and what it reveals about the life you're actually living.">
+<meta property="og:image" content="https://raw.githubusercontent.com/uxcircles/whilst/main/og.png">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:url" content="https://whilst.work">
+<meta name="twitter:title" content="Whilst — Time, Money, Life">
+<meta name="twitter:description" content="Not a finance app. A mirror. See where your money goes — and what it reveals about the life you're actually living.">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/uxcircles/whilst/main/og.png">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="window._supabaseLoadFailed=true"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500;1,6..72,600&family=DM+Mono:wght@0,400&display=swap&display=swap');
+
+:root {
+  --void: #0a0a0a;
+  --deep: #111111;
+  --surface: #161616;
+  --border: #2a2a2a;
+  --muted: #5e5e5e;
+  --dim: #7f7f7f;
+  --soft: #999999;
+  --light: #cccccc;
+  --bright: #f0f0f0;
+  --white: #fafafa;
+  --accent: #c8a96e;
+  --accent-dim: rgba(200, 169, 110, 0.15);
+  --danger: #8b3a3a;
+  --danger-dim: rgba(139, 58, 58, 0.12);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+*[style*="italic"], .splash-subtitle, .question-sub, .ob1-hint,
+.north-star-text, .window-result-label, .expense-conversion,
+.report-narrative, .report-question, .monthly-q-text, .annual-quote,
+.annual-final-q, .followup-q,
+.quote-text, .empty-state, .annual-data, .stat-card-label { letter-spacing: 0.03em; }
+
+em, i { letter-spacing: 0.03em; }
+
+html { font-size: 16px; }
+
+body {
+  background: var(--void);
+  color: var(--bright);
+  font-family: 'Newsreader', Georgia, serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+  cursor: default;
+}
+
+/* Grain overlay */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9;
+}
+
+/* ── SCREENS ── */
+.screen {
+  display: none;
+  min-height: 100vh;
+  min-height: 100dvh;
+  animation: fadeIn 0.8s ease forwards;
+}
+.screen.active { display: flex; flex-direction: column; height: 100vh; height: 100dvh; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── SPLASH ── */
+#screen-splash {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px 24px;
+  position: relative;
+}
+
+#screen-splash::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(200,169,110,0.04) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.splash-eyebrow {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 4px;
+  color: var(--dim);
+  margin-bottom: 32px;
+  text-transform: uppercase;
+}
+
+.splash-title {
+  font-family: 'Newsreader', serif;
+  font-size: clamp(56px, 15vw, 96px);
+  font-weight: 400;
+  color: var(--white);
+  letter-spacing: 8px;
+  line-height: 1;
+  margin-bottom: 24px;
+}
+
+.splash-subtitle {
+  font-size: 18px;
+  font-style: italic;
+  color: var(--dim);
+  font-weight: 400;
+  line-height: 2;
+  letter-spacing: 0.03em;
+  max-width: 320px;
+  margin: 0 auto 48px;
+}
+
+.splash-divider {
+  width: 1px;
+  height: 48px;
+  background: linear-gradient(to bottom, transparent, var(--muted), transparent);
+  margin: 0 auto 48px;
+}
+
+.btn-primary {
+  background: transparent;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  padding: 14px 40px;
+  font-family: 'Newsreader', serif;
+  font-size: 13px;
+  letter-spacing: 1.5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
+}
+
+.btn-primary:hover::before { transform: scaleX(1); }
+.btn-primary:hover { color: var(--white); }
+.btn-primary span { position: relative; z-index: 1; }
+
+.splash-signin {
+  background: transparent;
+  border: none;
+  color: var(--accent);
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  cursor: pointer;
+  margin-top: 16px;
+  padding: 8px;
+  transition: color 0.2s;
+}
+.splash-signin:hover { color: var(--white); }
+
+.splash-footer {
+  margin-top: auto;
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--muted);
+  padding-top: 32px;
+}
+
+/* ── ONBOARDING SHARED ── */
+.onboard-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 48px 24px 120px;
+  max-width: 540px;
+  margin: 0 auto;
+  width: 100%;
+  overflow-y: auto;
+}
+
+.progress-line {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 64px;
+}
+
+.progress-dot {
+  height: 2px;
+  flex: 1;
+  background: var(--muted);
+  transition: background 0.6s ease;
+}
+.progress-dot.done { background: var(--accent); }
+.progress-dot.active { background: var(--soft); }
+
+.question-text {
+  font-size: clamp(26px, 6vw, 38px);
+  font-weight: 400;
+  line-height: 1.35;
+  color: var(--white);
+  margin-bottom: 16px;
+  flex-shrink: 0;
+}
+
+.question-sub {
+  font-size: 15px;
+  font-style: italic;
+  color: var(--dim);
+  font-weight: 400;
+  line-height: 2;
+  letter-spacing: 0.03em;
+  margin-bottom: 48px;
+}
+
+.dark-textarea {
+  background: var(--surface);
+  border: none;
+  border-bottom: 1px solid var(--border);
+  color: var(--white);
+  font-family: 'Newsreader', serif;
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 1.7;
+  padding: 16px;
+  width: 100%;
+  resize: none;
+  outline: none;
+  flex: 1;
+  min-height: 120px;
+  transition: border-color 0.3s, background 0.3s;
+}
+
+.dark-textarea:focus { border-color: var(--soft); background: var(--deep); }
+.dark-textarea::placeholder { color: var(--muted); font-style: italic; letter-spacing: 0.03em; }
+
+.dark-input {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  color: var(--white);
+  font-family: 'Newsreader', serif;
+  font-size: 22px;
+  font-weight: 400;
+  padding: 12px 0;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.3s;
+}
+.dark-input:focus { border-color: var(--soft); }
+.dark-input::placeholder { color: var(--muted); font-style: italic; letter-spacing: 0.03em; }
+
+.ob1-hint {
+  font-size: 13px;
+  font-style: italic;
+  color: var(--muted);
+  line-height: 2;
+  letter-spacing: 0.03em;
+  margin-top: 14px;
+  padding-top: 14px;
+}
+
+.btn-next {
+  background: transparent;
+  border: none;
+  color: var(--dim);
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  cursor: default;
+  padding: 16px 0;
+  text-align: right;
+  transition: color 0.3s;
+  margin-top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.btn-next.ready { color: var(--accent); cursor: pointer; }
+.btn-next.ready:hover { color: var(--white); }
+.btn-next.ready:hover .btn-next-arrow { transform: translateX(4px); }
+.btn-next-arrow { font-size: 18px; transition: transform 0.3s; }
+
+.btn-back {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  cursor: pointer;
+  padding: 16px 0;
+  transition: color 0.3s;
+}
+.btn-back:hover { color: var(--dim); }
+
+.onboard-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 24px 24px;
+  background: #0a0a0a;
+  border-top: 1px solid var(--border);
+  z-index: 10000;
+}
+
+.onboard-nav-right {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.longing-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+
+.longing-opt {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--soft);
+  font-family: 'Newsreader', serif;
+  font-size: 17px;
+  padding: 14px 18px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.25s;
+  line-height: 1.4;
+}
+
+.longing-opt:hover {
+  border-color: var(--soft);
+  color: var(--light);
+}
+
+.longing-opt.selected {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-dim);
+}
+
+/* ── WINDOW FIELDS ── */
+.window-fields { display: flex; flex-direction: column; gap: 28px; margin-bottom: 24px; }
+
+.field-group label {
+  display: block;
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  color: var(--dim);
+  text-transform: none;
+  margin-bottom: 14px;
+}
+
+.window-result {
+  margin-top: 32px;
+  padding: 24px;
+  border: 1px solid var(--border);
+  background: var(--danger-dim);
+  border-color: rgba(139,58,58,0.3);
+  display: none;
+}
+
+.window-result.visible { display: block; animation: fadeIn 0.6s ease; }
+
+.window-result-number {
+  font-family: 'Newsreader', serif;
+  font-size: 52px;
+  font-weight: 400;
+  color: var(--accent);
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.window-result-label {
+  font-size: 14px;
+  font-style: italic;
+  letter-spacing: 0.03em;
+  color: var(--soft);
+  line-height: 1.6;
+}
+
+/* ── SLIDER ── */
+.slider-wrap { margin: 32px 0 24px; }
+
+.slider-value {
+  font-family: 'Newsreader', serif;
+  font-size: 64px;
+  font-weight: 400;
+  color: var(--white);
+  text-align: center;
+  margin-bottom: 8px;
+  transition: color 0.3s;
+}
+
+.slider-note {
+  text-align: center;
+  font-size: 13px;
+  font-style: italic;
+  letter-spacing: 0.03em;
+  color: var(--dim);
+  margin-bottom: 32px;
+  min-height: 20px;
+  transition: all 0.3s;
+}
+
+input[type="range"] {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 1px;
+  background: var(--border);
+  outline: none;
+  cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.3); }
+
+/* ── MAIN APP ── */
+#screen-app {
+  flex-direction: column;
+  overflow: visible;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: rgba(10,10,10,0.95);
+  backdrop-filter: blur(8px);
+  z-index: 100;
+}
+
+.app-logo {
+  font-family: 'Newsreader', serif;
+  font-size: 18px;
+  font-weight: 400;
+  letter-spacing: 4px;
+  color: var(--white);
+}
+
+.app-nav {
+  display: flex;
+  gap: 4px;
+}
+
+.nav-btn {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--dim);
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  padding: 8px 12px;
+  transition: color 0.2s, border-color 0.2s;
+  text-transform: uppercase;
+}
+
+.nav-btn:hover { color: var(--soft); }
+.nav-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+.app-body {
+  flex: 1;
+  padding: 32px 24px;
+  max-width: 540px;
+  margin: 0 auto;
+  width: 100%;
+  overflow-y: auto;
+}
+}
+
+/* ── DASHBOARD ── */
+.north-star {
+  padding: 24px;
+  border: 1px solid var(--border);
+  margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.north-star::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--accent), transparent);
+}
+
+.north-star-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: var(--dim);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.north-star-text {
+  font-size: 19px;
+  font-style: italic;
+  letter-spacing: 0.03em;
+  font-weight: 400;
+  color: var(--light);
+  line-height: 1.5;
+}
+
+.north-star-welcome {
+  font-size: 13px;
+  font-style: italic;
+  letter-spacing: 0.03em;
+  color: var(--dim);
+  line-height: 1.7;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.window-bar {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.window-bar-days {
+  font-family: 'Newsreader', serif;
+  font-size: 28px;
+  font-weight: 400;
+  color: var(--accent);
+}
+
+.window-bar-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--dim);
+  text-align: right;
+  line-height: 1.6;
+}
+
+/* Stats */
+.stats-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  padding: 20px 16px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.stat-card-value {
+  font-family: 'Newsreader', serif;
+  font-size: 32px;
+  font-weight: 400;
+  color: var(--white);
+  line-height: 1;
+  margin-bottom: 6px;
+}
+
+.stat-card-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 8px;
+  letter-spacing: 2px;
+  color: var(--dim);
+  text-transform: uppercase;
+  line-height: 1.5;
+}
+
+/* Add expense */
+.section-title {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: var(--dim);
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+.add-expense-form {
+  border: 1px solid var(--border);
+  padding: 20px;
+  margin-bottom: 24px;
+  background: var(--surface);
+}
+
+.form-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 32px;
+}
+
+.form-input {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  color: var(--white);
+  font-family: 'Newsreader', serif;
+  font-size: 17px;
+  font-weight: 400;
+  padding: 8px 0;
+  outline: none;
+  flex: 1;
+  transition: border-color 0.3s;
+}
+.form-input:focus { border-color: var(--soft); }
+.form-input::placeholder { color: var(--muted); font-style: italic; letter-spacing: 0.03em; }
+.form-input.amount { width: 100px; flex: none; text-align: right; }
+
+.motive-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 8px;
+  letter-spacing: 2px;
+  color: var(--dim);
+  margin-bottom: 10px;
+}
+
+.motive-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 0;
+}
+
+.motive-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--dim);
+  font-family: 'Newsreader', serif;
+  font-size: 14px;
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+}
+
+.motive-btn:hover { border-color: var(--soft); color: var(--light); }
+.motive-btn.selected { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+
+.submit-expense {
+  width: 100%;
+  background: transparent;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  font-family: 'Newsreader', serif;
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.submit-expense:hover {
+  border-color: var(--white);
+  color: var(--white);
+}
+
+/* Expense list */
+.expense-list { display: flex; flex-direction: column; gap: 0; }
+
+.expense-item {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border);
+  animation: fadeIn 0.4s ease;
+}
+
+.expense-item:last-child { border-bottom: none; }
+
+.expense-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 6px;
+}
+
+.expense-name {
+  font-size: 17px;
+  font-weight: 400;
+  color: var(--light);
+}
+
+.expense-amount {
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  color: var(--soft);
+}
+
+.expense-conversion {
+  font-size: 12px;
+  font-style: italic;
+  letter-spacing: 0.03em;
+  color: var(--dim);
+  line-height: 1.5;
+}
+
+.expense-motive-tag {
+  display: inline-block;
+  font-family: 'DM Mono', monospace;
+  font-size: 8px;
+  letter-spacing: 2px;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  padding: 2px 6px;
+  margin-top: 6px;
+  text-transform: uppercase;
+}
+
+.expense-motive-tag.warning {
+  color: rgba(200,169,110,0.6);
+  border-color: rgba(200,169,110,0.2);
+}
+
+/* ── WEEKLY REPORT ── */
+.report-card {
+  border: 1px solid var(--border);
+  padding: 28px 24px;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.report-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--muted), transparent);
+}
+
+.report-narrative {
+  font-size: 17px;
+  font-weight: 400;
+  line-height: 1.8;
+  color: var(--light);
+  margin-bottom: 24px;
+}
+
+.report-narrative strong {
+  color: var(--accent);
+  font-weight: 400;
+}
+
+.report-question {
+  font-size: 19px;
+  font-style: italic;
+  letter-spacing: 0.03em;
+  color: var(--white);
+  line-height: 1.5;
+  margin-bottom: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.report-textarea {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  color: var(--white);
+  font-family: 'Newsreader', serif;
+  font-size: 17px;
+  font-weight: 400;
+  line-height: 1.7;
+  padding: 12px 0;
+  width: 100%;
+  resize: none;
+  outline: none;
+  min-height: 80px;
+  transition: border-color 0.3s;
+}
+
+.report-textarea:focus { border-color: var(--soft); }
+.report-textarea::placeholder { color: var(--muted); font-style: italic; letter-spacing: 0.03em; }
+
+.report-submit {
+  background: transparent;
+  border: none;
+  color: var(--accent);
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  cursor: pointer;
+  padding: 14px 0;
+  transition: color 0.3s;
+  width: 100%;
+  text-align: center;
+}
+
+.report-submit:hover { color: var(--white); }
+
+/* Mirror layers */
+.mirror-layer-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--dim);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  margin-top: 32px;
+}
+
+.mirror-year-divider {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 56px 0 32px;
+}
+
+.mirror-year-divider::before,
+.mirror-year-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.mirror-year-divider span {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: var(--muted);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* Monthly question */
+.monthly-question {
+  border: 1px solid var(--border);
+  padding: 32px 24px;
+  margin-bottom: 20px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.monthly-question::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--accent), transparent);
+}
+
+.monthly-q-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 8px;
+  letter-spacing: 3px;
+  color: var(--dim);
+  text-transform: uppercase;
+  margin-bottom: 24px;
+}
+
+.monthly-q-text {
+  font-size: 22px;
+  font-style: italic;
+  letter-spacing: 0.03em;
+  font-weight: 400;
+  color: var(--white);
+  line-height: 1.55;
+  margin-bottom: 32px;
+}
+
+/* ── ANNUAL REPORT ── */
+.annual-wrap {
+  padding: 24px;
+}
+
+.annual-mirror {
+  border: 1px solid var(--border);
+  padding: 32px 24px;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.annual-section {
+  margin-bottom: 28px;
+  padding-bottom: 28px;
+  border-bottom: 1px solid var(--border);
+}
+
+.annual-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.annual-section-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 8px;
+  letter-spacing: 3px;
+  color: var(--dim);
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+.annual-quote {
+  font-size: 20px;
+  font-style: italic;
+  letter-spacing: 0.03em;
+  font-weight: 400;
+  color: var(--white);
+  line-height: 1.6;
+  border-left: 1px solid var(--accent);
+  padding-left: 20px;
+}
+
+.annual-data {
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--soft);
+  line-height: 2;
+}
+
+.annual-data strong {
+  color: var(--light);
+  font-weight: 400;
+}
+
+.annual-highlight {
+  font-family: 'Newsreader', serif;
+  font-size: 48px;
+  font-weight: 400;
+  color: var(--accent);
+  line-height: 1;
+  margin: 8px 0 4px;
+}
+
+.annual-final {
+  text-align: center;
+  padding: 40px 24px;
+}
+
+.annual-final-q {
+  font-size: 22px;
+  font-style: italic;
+  letter-spacing: 0.03em;
+  font-weight: 400;
+  color: var(--white);
+  line-height: 1.6;
+  margin-bottom: 32px;
+}
+
+.slider-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.slider-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--dim);
+  white-space: nowrap;
+}
+
+/* ── SEVEN DAY FOLLOW UP ── */
+.password-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.password-wrap .dark-input {
+  flex: 1;
+  border-bottom: none;
+  padding-right: 0;
+  margin-top: 0;
+}
+
+.password-wrap:focus-within {
+  border-color: var(--soft);
+}
+
+.password-toggle {
+  background: transparent;
+  border: none;
+  color: var(--dim);
+  cursor: pointer;
+  padding: 8px 0;
+  font-size: 11px;
+  font-family: 'DM Mono', monospace;
+  letter-spacing: 1px;
+  transition: color 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.password-toggle:hover { color: var(--soft); }
+
+.auth-tab {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  color: var(--dim);
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 2px;
+  padding: 8px 0;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex: 1;
+}
+.auth-tab.active { color: var(--accent); border-color: var(--accent); }
+
+.begin-again {
+  text-align: center;
+  padding: 48px 0 32px;
+  border-top: 1px solid var(--border);
+  margin-top: 48px;
+}
+
+.begin-again-prompt {
+  font-size: 13px;
+  font-style: italic;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+  margin-bottom: 12px;
+  line-height: 1.6;
+}
+
+.begin-again-btn {
+  background: transparent;
+  border: none;
+  color: var(--accent);
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: color 0.3s;
+  padding: 8px 0;
+}
+
+.begin-again-btn:hover { color: var(--white); }
+
+/* ── FAB ── */
+.fab {
+  position: fixed;
+  bottom: 32px;
+  right: 24px;
+  background: var(--void);
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  padding: 12px 20px;
+  cursor: pointer;
+  transition: all 0.25s;
+  z-index: 50;
+  display: none;
+}
+
+.fab:hover {
+  background: var(--accent);
+  color: var(--void);
+}
+
+/* ── RECORD MODAL ── */
+.record-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: var(--void);
+  z-index: 150;
+  flex-direction: column;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.record-modal.open { display: flex; }
+
+.record-modal-inner {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding: 48px 28px 48px;
+  max-width: 540px;
+  margin: 0 auto;
+  width: 100%;
+  animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.record-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 48px;
+  padding-top: 8px;
+}
+
+.record-modal-title {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: var(--dim);
+}
+
+.record-modal-close {
+  background: transparent;
+  border: none;
+  color: var(--dim);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px 8px;
+  transition: color 0.2s;
+  line-height: 1;
+}
+
+.record-modal-close:hover { color: var(--soft); }
+
+.record-modal-body { flex: 1; }
+
+.followup-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(10,10,10,0.95);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  animation: fadeIn 0.5s ease;
+}
+
+.followup-modal.open { display: flex; }
+
+.followup-inner {
+  max-width: 420px;
+  width: 100%;
+  border: 1px solid var(--border);
+  padding: 40px 32px;
+  background: var(--deep);
+  position: relative;
+}
+
+.followup-inner::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--accent), transparent);
+}
+
+.followup-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 8px;
+  letter-spacing: 3px;
+  color: var(--dim);
+  text-transform: uppercase;
+  margin-bottom: 24px;
+}
+
+.followup-q {
+  font-size: 20px;
+  font-style: italic;
+  letter-spacing: 0.03em;
+  font-weight: 400;
+  color: var(--white);
+  line-height: 1.6;
+  margin-bottom: 32px;
+}
+
+.followup-item {
+  font-size: 14px;
+  color: var(--accent);
+  font-family: 'DM Mono', monospace;
+  margin-bottom: 24px;
+  padding: 12px;
+  border: 1px solid rgba(200,169,110,0.2);
+}
+
+.followup-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.followup-opt {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--soft);
+  font-family: 'Newsreader', serif;
+  font-size: 16px;
+  padding: 14px 16px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s;
+  line-height: 1.4;
+}
+
+.followup-opt:hover {
+  border-color: var(--soft);
+  color: var(--light);
+}
+
+/* ── TOAST ── */
+.toast {
+  position: fixed;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%) translateY(calc(100% + 48px));
+  visibility: hidden;
+  background: var(--deep);
+  border: 1px solid var(--border);
+  border-left: 2px solid var(--accent);
+  color: var(--soft);
+  font-family: 'Newsreader', serif;
+  font-style: italic;
+  letter-spacing: 0.03em;
+  font-size: 15px;
+  padding: 16px 20px;
+  max-width: 340px;
+  width: 90%;
+  text-align: center;
+  transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), visibility 0s linear 0.5s;
+  z-index: 300;
+  line-height: 1.5;
+}
+
+.toast.show {
+  transform: translateX(-50%) translateY(0);
+  visibility: visible;
+  transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), visibility 0s linear 0s;
+}
+
+.expense-delete {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+  transition: color 0.2s;
+  flex-shrink: 0;
+}
+.expense-delete:hover { color: var(--danger); }
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: 48px 0;
+  color: var(--muted);
+  font-style: italic;
+  letter-spacing: 0.03em;
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="screen-splash" class="screen active">
+  <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding: 48px 24px;">
+    <div class="splash-eyebrow">Time · Money · Life</div>
+    <div class="splash-title">Whilst</div>
+    <div class="splash-subtitle" id="splash-tagline">This is not a finance app.<br>It is a mirror.</div>
+    <div class="splash-divider"></div>
+    <button class="btn-primary" onclick="goTo('screen-ob1')"><span id="splash-begin">Begin</span></button>
+    <button class="splash-signin" id="splash-signin" onclick="openAuthModal()">Already have an account →</button>
+  </div>
+  <div class="splash-footer" id="splash-footer">You have been rather generous with your life's savings.<br>Unknowingly, of course.</div>
+</div>
+
+<!-- ONBOARDING 1: The longing -->
+<div id="screen-ob1" class="screen">
+  <div class="onboard-wrap">
+    <div class="progress-line">
+      <div class="progress-dot active"></div>
+      <div class="progress-dot"></div>
+      <div class="progress-dot"></div>
+    </div>
+    <div class="question-text">What is the one thing in life you most dread missing?</div>
+    <div class="question-sub">Not what you should want. Not what sounds noble. If there is more than one, choose the one that keeps you awake at night.</div>
+    <div id="ob1-crisis" style="font-size:11px; font-style:italic; letter-spacing:0.03em; color:var(--muted); margin-top:-16px; margin-bottom:8px; line-height:1.6;">This app is for reflection, not crisis support. If you are struggling, please reach out to someone who can help.</div>
+
+    <div class="longing-options" id="longing-options">
+      <button class="longing-opt" onclick="selectLonging(this, 'person')" data-type="person">Time with someone I love</button>
+      <button class="longing-opt" onclick="selectLonging(this, 'freedom')" data-type="freedom">The freedom to leave</button>
+      <button class="longing-opt" onclick="selectLonging(this, 'work')" data-type="work">Work I actually love</button>
+      <button class="longing-opt" onclick="selectLonging(this, 'other')" data-type="other">Something else</button>
+    </div>
+
+    <textarea class="dark-textarea" id="ob1-answer" placeholder="Write freely. There are no correct answers here." rows="4" id="ob1-answer-ta" oninput="checkOb1()" style="display:none; margin-top:20px;"></textarea>
+    <div class="ob1-hint" id="ob1-hint" style="display:none;"></div>
+
+    <div class="onboard-nav onboard-nav-right" id="nav-ob1">
+      <button class="btn-next" id="ob1-next" onclick="goToOb2()">
+        <span>Continue</span>
+        <span class="btn-next-arrow">→</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ONBOARDING 2: The window -->
+<div id="screen-ob2" class="screen">
+  <div class="onboard-wrap">
+    <div class="progress-line">
+      <div class="progress-dot done"></div>
+      <div class="progress-dot active"></div>
+      <div class="progress-dot"></div>
+    </div>
+    <div class="question-text" id="ob2-title">Some things have a closing time.</div>
+    <div class="question-sub" id="ob2-sub">Tell us about the person most central to your answer.</div>
+
+    <div class="window-fields" id="ob2-fields"></div>
+
+    <div class="window-result" id="window-result">
+      <div class="window-result-number" id="window-number">—</div>
+      <div class="window-result-label" id="window-label">—</div>
+    </div>
+
+    <div class="onboard-nav" id="nav-ob2">
+      <button class="btn-back" onclick="goTo('screen-ob1')"><span id="back-ob2">← Back</span></button>
+      <button class="btn-next" id="ob2-next" onclick="goToOb3()">
+        <span>Continue</span>
+        <span class="btn-next-arrow">→</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ONBOARDING 3: The honest assessment -->
+<div id="screen-ob3" class="screen">
+  <div class="onboard-wrap">
+    <div class="progress-line">
+      <div class="progress-dot done"></div>
+      <div class="progress-dot done"></div>
+      <div class="progress-dot active"></div>
+    </div>
+    <div class="question-text" id="ob3-question">What proportion of your life, right now, is genuinely yours?</div>
+    <div class="question-sub" id="ob3-sub">Not the life you perform for others. Not the life you are working towards. The life you are actually living.</div>
+
+    <div class="slider-wrap">
+      <div class="slider-value" id="slider-val">40%</div>
+      <div class="slider-note" id="slider-note">Most people say somewhere between 30 and 50.</div>
+      <input type="range" id="life-slider" min="0" max="100" value="40" oninput="updateSlider(this.value)">
+    </div>
+
+    <div class="onboard-nav" id="nav-ob3">
+      <button class="btn-back" onclick="goTo('screen-ob2')"><span id="back-ob3">← Back</span></button>
+      <button class="btn-next ready" onclick="goToApp()">
+        <span>Enter</span>
+        <span class="btn-next-arrow">→</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="screen-app" class="screen">
+  <div class="app-header">
+    <div class="app-logo">Whilst</div>
+    <div class="app-nav">
+      <button class="nav-btn active" onclick="showTab('tab-today', this)"><span id="nav-now">Now</span></button>
+      <button class="nav-btn" onclick="showTab('tab-weekly', this)"><span id="nav-mirror">Mirror</span></button>
+    </div>
+  </div>
+
+  <div class="app-body">
+
+    <!-- TODAY TAB -->
+    <div id="tab-today" class="tab-content active">
+
+      <!-- North Star -->
+      <div class="north-star">
+        <div class="north-star-label">Your North Star</div>
+        <div class="north-star-text" id="app-longing">—</div>
+        <div class="north-star-welcome" id="app-welcome" style="display:none;"></div>
+        <div class="window-bar" id="app-window-bar">
+          <div>
+            <div class="window-result-number" style="font-size:32px" id="app-window-days">—</div>
+          </div>
+          <div class="window-bar-label" id="app-window-label">days remaining<br>in your window</div>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-row" id="stats-row">
+        <div class="stat-card">
+          <div class="stat-card-value" id="stat-total">£0</div>
+          <div class="stat-card-label" id="stat-total-label">spent<br>this month</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-value" id="stat-hours">0h</div>
+          <div class="stat-card-label">hours of your<br>life exchanged</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-value" id="stat-impulse">0%</div>
+          <div class="stat-card-label">spent whilst<br>escaping</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-value" id="stat-forgotten">0%</div>
+          <div class="stat-card-label">already<br>forgotten</div>
+        </div>
+      </div>
+
+      <!-- Distress note — appears when numbers are difficult -->
+      <div id="distress-note" style="display:none; font-size:13px; font-style:italic; letter-spacing:0.03em; color:var(--dim); text-align:center; padding: 0 0 16px; line-height:1.7;"></div>
+
+      <!-- Expense list -->
+      <div class="section-title" id="ledger-title">The ledger</div>
+      <div class="expense-list" id="expense-list">
+        <div class="empty-state" id="empty-state-text">Nothing recorded yet.<br>Which is either admirable or dishonest.</div>
+      </div>
+
+    </div>
+
+    <!-- WEEKLY TAB -->
+    <div id="tab-weekly" class="tab-content">
+
+      <!-- Layer 1: This Month -->
+      <div class="mirror-layer-label">This Month</div>
+      <div class="report-card" id="weekly-report">
+        <div class="report-narrative" id="weekly-narrative">
+          One moment…
+        </div>
+        <div class="report-question">
+          This month, did you do anything — anything at all — that moved you closer to what you said matters most?
+        </div>
+        <textarea class="report-textarea" id="weekly-answer" placeholder="There is no judgement here. Only honesty." rows="4"></textarea>
+        <button class="report-submit" onclick="saveWeekly()">Note it quietly →</button>
+      </div>
+
+      <!-- Layer 2: The Question -->
+      <div class="mirror-layer-label">The Question</div>
+      <div class="monthly-question">
+        <div class="monthly-q-label" id="monthly-q-label-el">This month's question</div>
+        <div class="monthly-q-text" id="monthly-q">
+          "If your work paid nothing at all, would you still do it?"
+        </div>
+        <textarea class="report-textarea" id="monthly-answer" placeholder="Take your time." rows="4"></textarea>
+        <button class="report-submit" onclick="saveMonthly()">Note it quietly →</button>
+      </div>
+
+      <!-- Layer 3: This Year — quiet, requires intent to reach -->
+      <div class="mirror-year-divider">
+        <span>This Year</span>
+      </div>
+
+      <div class="annual-mirror">
+        <div class="annual-section">
+          <div class="annual-section-label">What you said</div>
+          <div class="annual-quote" id="annual-longing">—</div>
+        </div>
+        <div class="annual-section">
+          <div class="annual-section-label">What followed</div>
+          <div class="annual-data" id="annual-data">
+            Nothing recorded yet. Begin with one honest entry.
+          </div>
+        </div>
+        <div class="annual-section">
+          <div class="annual-section-label">Time remaining</div>
+          <div class="annual-highlight" id="annual-window">—</div>
+          <div style="font-size:13px; font-style:italic; letter-spacing:0.03em; color:var(--dim); margin-top:4px;" id="annual-window-sub">days remaining</div>
+        </div>
+      </div>
+
+      <div class="annual-final">
+        <div class="annual-final-q">
+          <span id="annual-slider-q-text">You said your life was </span><strong id="annual-slider-was" style="color:var(--accent)">—</strong><span id="annual-slider-q-text2"> yours.<br><br>What would you say now?</span>
+        </div>
+        <div class="slider-row" style="margin-bottom:24px;">
+          <span class="slider-label">0%</span>
+          <input type="range" id="annual-slider" min="0" max="100" value="40" oninput="updateAnnualSlider(this.value)" style="flex:1">
+          <span class="slider-label">100%</span>
+        </div>
+        <div style="font-family:'Newsreader',serif; font-size:40px; color:var(--white);" id="annual-slider-val">40%</div>
+        <div style="font-size:13px; font-style:italic; letter-spacing:0.03em; color:var(--dim); margin-top:8px;" id="annual-slider-note">—</div>
+      </div>
+
+      <!-- Begin Again -->
+      <div class="begin-again">
+        <div class="begin-again-prompt">Your answers no longer feel true?</div>
+        <button class="begin-again-btn" onclick="openBeginAgain()">Begin again →</button>
+      </div>
+
+      <!-- Privacy -->
+      <div style="text-align:center; padding: 16px 0 0;">
+        <div class="begin-again-prompt">Your answers are stored securely. They are never shared, sold, or read by anyone.</div>
+      </div>
+
+      <!-- Account -->
+      <div class="begin-again" id="account-section">
+        <div class="begin-again-prompt" id="account-prompt">Your records exist only on this device.</div>
+        <button class="begin-again-btn" id="account-btn" onclick="openAuthModal()">Create an account to keep them →</button>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<!-- BEGIN AGAIN MODAL -->
+<div class="followup-modal" id="begin-again-modal">
+  <div class="followup-inner">
+    <div class="followup-label">Before you begin again</div>
+    <div class="followup-q">Are you starting again because something has genuinely changed, or because you are avoiding what the numbers are telling you?</div>
+    <div class="followup-options">
+      <button class="followup-opt" onclick="confirmBeginAgain(true)">Something has genuinely changed.</button>
+      <button class="followup-opt" onclick="confirmBeginAgain(false)">I would rather not answer that.</button>
+    </div>
+  </div>
+</div>
+
+<!-- AUTH MODAL -->
+<div class="followup-modal" id="auth-modal">
+  <div class="followup-inner" style="max-width:380px;">
+    <div class="followup-label">Your records</div>
+    <div class="followup-q" style="font-size:16px;" id="auth-reason">Create a free account to save your records across devices.</div>
+
+    <div style="display:flex; gap:12px; margin-bottom:24px;">
+      <button class="auth-tab active" id="auth-tab-signin" onclick="switchAuthTab('signin')">Sign in</button>
+      <button class="auth-tab" id="auth-tab-signup" onclick="switchAuthTab('signup')">Create account</button>
+    </div>
+
+    <div id="auth-signin-form">
+      <div class="field-group" style="margin-bottom:16px;">
+        <label id="auth-email-label-signin">Email</label>
+        <input class="dark-input" id="signin-email" type="email" placeholder="your@email.com" style="margin-top:8px;">
+      </div>
+      <div class="field-group" style="margin-bottom:24px;">
+        <label id="auth-password-label-signin">Password</label>
+        <div class="password-wrap">
+          <input class="dark-input" id="signin-password" type="password" placeholder="••••••••">
+          <button class="password-toggle" type="button" onclick="togglePassword('signin-password', this)" tabindex="-1">show</button>
+        </div>
+      </div>
+      <button class="submit-expense" id="auth-signin-submit" onclick="handleSignIn()">Sign in</button>
+    </div>
+
+    <div id="auth-signup-form" style="display:none;">
+      <div class="field-group" style="margin-bottom:16px;">
+        <label id="auth-email-label-signup">Email</label>
+        <input class="dark-input" id="signup-email" type="email" placeholder="your@email.com" style="margin-top:8px;">
+      </div>
+      <div class="field-group" style="margin-bottom:24px;">
+        <label id="auth-password-label-signup">Password</label>
+        <div class="password-wrap">
+          <input class="dark-input" id="signup-password" type="password" placeholder="At least 6 characters">
+          <button class="password-toggle" type="button" onclick="togglePassword('signup-password', this)" tabindex="-1">show</button>
+        </div>
+      </div>
+      <button class="submit-expense" id="auth-signup-submit" onclick="handleSignUp()">Create account</button>
+    </div>
+
+    <button class="begin-again-btn" onclick="closeAuthModal()" style="margin-top:20px; display:block; text-align:center; width:100%;" id="auth-skip-btn">Continue without an account →</button>
+  </div>
+</div>
+
+<!-- FAB — outside all screens so fixed positioning works correctly -->
+<button class="fab" id="fab-record" onclick="openRecordModal()"><span id="fab-label">+ Record</span></button>
+
+<!-- RECORD MODAL -->
+<div class="record-modal" id="record-modal">
+  <div class="record-modal-inner">
+    <div class="record-modal-header">
+      <div class="record-modal-title">Where has your life been going?</div>
+      <button class="record-modal-close" onclick="closeRecordModal()">✕</button>
+    </div>
+
+    <div class="record-modal-body">
+      <div class="form-row">
+        <input class="form-input" id="exp-name" placeholder="What did you buy?" maxlength="40" data-ph-en="What did you buy?" data-ph-zh="你買了什麼？">
+        <input class="form-input amount" id="exp-amount" type="number" placeholder="£0" min="0">
+      </div>
+      <div class="motive-label" id="motive-label-text">Why, honestly?</div>
+      <div class="motive-grid">
+        <button class="motive-btn" onclick="selectMotive(this)" data-m="I needed it">I needed it</button>
+        <button class="motive-btn" onclick="selectMotive(this)" data-m="I wanted it">I wanted it</button>
+        <button class="motive-btn" onclick="selectMotive(this)" data-m="I was bored">I was bored</button>
+        <button class="motive-btn" onclick="selectMotive(this)" data-m="I was unhappy">I was unhappy</button>
+        <button class="motive-btn" onclick="selectMotive(this)" data-m="A treat to myself">A treat to myself</button>
+        <button class="motive-btn" onclick="selectMotive(this)" data-m="I don't know">I don't know</button>
+      </div>
+    </div>
+
+    <div style="padding-top:28px;">
+      <button class="submit-expense" onclick="addExpense()">Record</button>
+    </div>
+  </div>
+</div>
+
+<!-- 7-DAY FOLLOW UP MODAL -->
+<div class="followup-modal" id="followup-modal">
+  <div class="followup-inner">
+    <div class="followup-label" id="followup-label-el">Seven days later</div>
+    <div class="followup-q" id="followup-q-el">You bought something whilst feeling rather low.</div>
+    <div class="followup-item" id="followup-item">—</div>
+    <div class="followup-q" style="font-size:17px;">Does it still bring you any pleasure?</div>
+    <div class="followup-options">
+      <button class="followup-opt" onclick="answerFollowup(true)">Yes, genuinely. It was worth it.</button>
+      <button class="followup-opt" onclick="answerFollowup(false)" id="followup-forgotten-btn">Honestly — I had nearly forgotten.</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<!-- SALARY MODAL -->
+<div class="followup-modal" id="salary-modal">
+  <div class="followup-inner">
+    <div class="followup-label">One thing first</div>
+    <div class="followup-q">What is your approximate monthly salary?</div>
+    <div style="font-size:13px; font-style:italic; letter-spacing:0.03em; color:var(--muted); margin-bottom:24px; line-height:1.7;">
+      Used only to calculate how many hours of your life each purchase costs. Stored locally. Never shared.
+    </div>
+    <input class="dark-input" id="monthly-salary" type="number" id="salary-input" placeholder="e.g. 3000" min="1" style="margin-bottom:24px;">
+    <div class="followup-options">
+      <button class="submit-expense" onclick="saveSalary()">Continue</button>
+      <button class="begin-again-btn" onclick="skipSalary()" style="display:block; width:100%; text-align:center; margin-top:12px;">Skip — I'd rather not say</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── DATE FORMATTING ──
+const userLocale = navigator.language || 'en-GB';
+const isZh = userLocale.startsWith('zh');
+
+function formatDate(date = new Date()) {
+  return new Intl.DateTimeFormat(userLocale, {
+    day: 'numeric', month: 'numeric', year: 'numeric'
+  }).format(date instanceof Date ? date : new Date(date));
+}
+
+// ── i18n ──
+const t = {
+  // Splash
+  splash_tagline: isZh ? '你有沒有認真問過自己，真正想要的是什麼？' : 'This is not a finance app. It is a mirror.',
+  splash_begin: isZh ? '啟程' : 'Begin',
+  splash_signin: isZh ? '已有帳號？登入 →' : 'Already have an account →',
+  splash_footer: isZh ? '你一直很慷慨地揮霍著自己的人生，只是自己無意識。' : "You have been rather generous with your life's savings. Unknowingly, of course.",
+
+  // Onboarding 1
+  ob1_question: isZh ? '你這輩子，最不想錯過的是什麼？' : 'What is the one thing in life you most dread missing?',
+  ob1_sub: isZh ? '不是你應該想要的，也不是說出來好聽的。如果不只一個，選那個讓你深夜失眠的。' : 'Not what you should want. Not what sounds noble. If there is more than one, choose the one that keeps you awake at night.',
+  ob1_opt_person: isZh ? '陪伴我的摯愛' : 'Time with someone I love',
+  ob1_opt_freedom: isZh ? '說走就走的自由' : 'The freedom to leave',
+  ob1_opt_work: isZh ? '做自己真正熱愛的事' : 'Work I actually love',
+  ob1_opt_other: isZh ? '其他' : 'Something else',
+  ob1_placeholder: isZh ? '自由書寫，沒有標準答案。' : 'Write freely. There are no correct answers here.',
+  ob1_hint: isZh ? '慢慢想，越具體越誠實。' : 'Take your time. The more specific, the more honest.',
+  ob1_continue: isZh ? '繼續' : 'Continue',
+
+  // Onboarding 2
+  ob2_title_person: isZh ? '有些事，是有期限的。' : 'Time with someone I love.',
+  ob2_sub_person: isZh ? '這是關於誰？接下來的問題，會因你的答案而不同。' : 'Who is this about? The question that follows will depend on your answer.',
+  ob2_rel_parent: isZh ? '我的父母' : 'A parent',
+  ob2_rel_child: isZh ? '我的孩子' : 'My child',
+  ob2_rel_partner: isZh ? '我的伴侶' : 'My partner',
+  ob2_rel_other: isZh ? '其他人' : 'Someone else',
+
+  ob2_title_freedom: isZh ? '有些事讓你走不了。' : 'Something is keeping you here.',
+  ob2_sub_freedom: isZh ? '值得好好了解。' : 'That is worth understanding.',
+  ob2_title_work: isZh ? '你心裡其實已經知道是什麼。' : 'You already know what it is.',
+  ob2_sub_work: isZh ? '問題是什麼橫在你和它之間。' : 'The question is what has been standing between you and it.',
+  ob2_title_other: isZh ? '有些事，是有期限的。' : 'Some things have a closing time.',
+  ob2_sub_other: isZh ? '你的情況可能和別人不同，但這不代表它不真實。' : "Yours may be different from anyone else's. That does not make it less real.",
+
+  // Field labels
+  field_their_age: isZh ? '他們的年紀' : 'Their age',
+  field_days_together: isZh ? '你們一年實際相處幾天？' : 'How many days per year do you actually spend together?',
+  field_child_age: isZh ? '他們幾歲？' : 'How old are they?',
+  field_child_hours: isZh ? '你每天真正陪伴他們幾個小時？' : 'How many hours a day are you truly present with them?',
+  field_live_together: isZh ? '你們住在一起嗎？' : 'Do you live together?',
+  field_yes: isZh ? '是' : 'Yes',
+  field_no: isZh ? '否' : 'No',
+  field_partner_hours: isZh ? '你們每天真正在一起幾個小時——不只是待在同一個空間？' : 'How many hours a day do you truly spend together — not just in the same room?',
+  field_partner_days: isZh ? '你們通常一週見幾天？' : 'How many days per week do you typically see each other?',
+  field_partner_last: isZh ? '你上一次把他們放在所有事情之前，是什麼時候？' : 'When did you last prioritise them over everything else?',
+  field_partner_block: isZh ? '是什麼一直在阻礙？' : 'What keeps getting in the way?',
+  field_other_who: isZh ? '你們是什麼關係？' : 'Who is this person to you?',
+  field_other_days: isZh ? '你們一年實際見幾天？' : 'How many days per year do you actually see them?',
+  field_freedom_last: isZh ? '你上一次真正說走就走，是什麼時候？' : 'When did you last truly act on that freedom?',
+  field_escape_fund: isZh ? '你需要多少錢，才能真正離開？' : 'How much would you need to actually leave?',
+  field_freedom_block: isZh ? '現在是什麼讓你走不了？' : 'What is stopping you now?',
+  field_work_what: isZh ? '那件事，具體是什麼？' : 'What is that work, exactly?',
+  field_work_hours: isZh ? '如果可以，你願意每週投入幾個小時？' : 'If you could, how many hours a week would you dedicate to it?',
+  field_work_last: isZh ? '你上一次做這件事，是什麼時候？' : 'When did you last do it, even briefly?',
+  field_limit: isZh ? '是什麼讓你無法實現——時間、健康、環境，還是勇氣？' : 'What is limiting this — time, health, circumstance, courage?',
+  field_dimension_q: isZh ? '橫在你和它之間的，主要是錢的問題，還是時間的問題？' : 'Is what stands between you and this primarily a matter of money or time?',
+  field_money: isZh ? '錢' : 'Money',
+  field_time: isZh ? '時間' : 'Time',
+  field_other_fund: isZh ? '需要多少錢，才能讓這件事成真？' : 'How much would make this possible?',
+  field_other_years: isZh ? '你覺得你還有幾年？' : 'How much time do you think you still have for this?',
+  field_other_days_year: isZh ? '每年可以投入幾天？' : 'How many days per year could you dedicate to it?',
+
+  // Onboarding 3
+  ob3_question: isZh ? '你現在的生活，有多少比例是真正屬於你的？' : 'What proportion of your life, right now, is genuinely yours?',
+  ob3_sub: isZh ? '不是你表演給別人看的那個，不是你正在努力追求的那個。是你真實活著的那個。' : 'Not the life you perform for others. Not the life you are working towards. The life you are actually living.',
+  ob3_default_note: isZh ? '大多數人的答案落在 30 到 50 之間。' : 'Most people say somewhere between 30 and 50.',
+  ob3_salary_q: isZh ? '你的月薪大約是多少？' : 'What is your approximate monthly salary?',
+  ob3_salary_note: isZh ? '僅供計算使用。這個數字只有你知道。' : 'Used only to calculate how many hours of your life each purchase costs. Stored locally. Never shared.',
+  ob3_enter: isZh ? '進入' : 'Enter',
+
+  // Slider notes
+  slider_0: isZh ? '一點都不是，這需要很大的勇氣才能承認' : 'None of it. That is a heavy thing to carry.',
+  slider_10: isZh ? '不到四分之一，你心裡其實知道哪裡不對' : 'Very little. Most people would not admit to this.',
+  slider_20: isZh ? '不到四分之一，你心裡其實知道哪裡不對' : 'Less than a quarter. You know something is wrong.',
+  slider_30: isZh ? '大多數人的答案落在 30 到 50 之間' : 'Less than a third. You are not alone in this.',
+  slider_40: isZh ? '大多數人的答案落在 30 到 50 之間' : 'Most people say somewhere between 30 and 50.',
+  slider_50: isZh ? '超過一半，這比多數人說的都多' : 'Half. The glass is both half full and half empty.',
+  slider_60: isZh ? '超過一半，這比多數人說的都多' : 'More than half. That is more than most.',
+  slider_70: isZh ? '大部分都是，你要麼很幸運，要麼很誠實' : 'Quite a lot. You are doing rather better than average.',
+  slider_80: isZh ? '大部分都是，你要麼很幸運，要麼很誠實' : 'Most of it. Either you are very fortunate, or very honest.',
+  slider_90: isZh ? '全部都是，但願如此' : 'Nearly all of it. Remarkable, if true.',
+  slider_100: isZh ? '全部都是，但願如此' : 'All of it. One hopes you mean that.',
+
+  // App
+  nav_now: isZh ? '現在' : 'Now',
+  nav_mirror: isZh ? '鏡子' : 'Mirror',
+  north_star_label: isZh ? '你最不想錯過的' : 'Your North Star',
+  stat_total: isZh ? '本月花費' : 'spent\nthis month',
+  stat_hours: isZh ? '花掉的人生時間' : 'hours of your\nlife exchanged',
+  stat_impulse: isZh ? '逃避時的花費' : 'spent whilst\nescaping',
+  stat_forgotten: isZh ? '已經遺忘' : 'already\nforgotten',
+  stat_empty: isZh ? '本月尚無記錄' : 'nothing recorded\nyet this month',
+  ledger_title: isZh ? '消費記錄' : 'The ledger',
+  record_title: isZh ? '你的人生，都花到哪去了？' : 'Where has your life been going?',
+  record_what: isZh ? '你買了什麼？' : 'What did you buy?',
+  record_why: isZh ? '說實話，為什麼？' : 'Why, honestly?',
+  motive_needed: isZh ? '我需要它' : 'I needed it',
+  motive_wanted: isZh ? '我想要它' : 'I wanted it',
+  motive_bored: isZh ? '我只是無聊' : 'I was bored',
+  motive_unhappy: isZh ? '我心情不好' : 'I was unhappy',
+  motive_treat: isZh ? '犒賞自己' : 'A treat to myself',
+  motive_unknown: isZh ? '我也不知道' : "I don't know",
+  record_btn: isZh ? '記下來' : 'Record',
+
+  // Mirror
+  mirror_this_month: isZh ? '本月' : 'This Month',
+  mirror_question: isZh ? '本月一問' : 'The Question',
+  mirror_this_year: isZh ? '今年' : 'This Year',
+  mirror_reflect_q: isZh ? '這個月，你有沒有做過任何一件事，哪怕只有一件，讓你更靠近你說過最在乎的那件事？' : 'This month, did you do anything — anything at all — that moved you closer to what you said matters most?',
+  mirror_placeholder: isZh ? '這裡沒有評判，只有誠實。' : 'There is no judgement here. Only honesty.',
+  mirror_monthly_placeholder: isZh ? '慢慢想。' : 'Take your time.',
+  mirror_save: isZh ? '悄悄記下' : 'Note it quietly →',
+
+  // Annual
+  annual_said: isZh ? '你說過的' : 'What you said',
+  annual_followed: isZh ? '數字說的' : 'What followed',
+  annual_window: isZh ? '剩餘時間' : 'Time remaining',
+  annual_empty: isZh ? '尚無記錄，先記下一筆誠實的消費。' : 'Nothing recorded yet. Begin with one honest entry.',
+  annual_slider_q: isZh ? '你說你的生活有 {x}% 是真正屬於你的。現在呢？' : 'You said your life was {x}% yours. What would you say now?',
+  annual_slider_up: isZh ? '有些事改變了，值得留意' : 'Something has shifted. That is worth noting.',
+  annual_slider_same: isZh ? '一樣，這本身就說明了一些事' : 'The same. Which tells its own story.',
+  annual_slider_down: isZh ? '比以前更少了，你心裡其實知道什麼需要改變' : 'Less yours than before. You already know what needs to change.',
+
+  // Begin again
+  begin_again_prompt: isZh ? '你的答案，感覺不再真實了？' : 'Your answers no longer feel true?',
+  begin_again_btn: isZh ? '重新開始 →' : 'Begin again →',
+  begin_again_label: isZh ? '在你重新開始之前' : 'Before you begin again',
+  begin_again_q: isZh ? '你重新開始，是因為生活真的改變了，還是因為你在逃避數字告訴你的事？' : 'Are you starting again because something has genuinely changed, or because you are avoiding what the numbers are telling you?',
+  begin_again_yes: isZh ? '生活真的改變了。' : 'Something has genuinely changed.',
+  begin_again_no: isZh ? '我不想回答這個問題。' : 'I would rather not answer that.',
+
+  // Account
+  account_local: isZh ? '你的記錄只存在這台裝置上。' : 'Your records exist only on this device.',
+  account_create: isZh ? '建立帳號來保存它們 →' : 'Create an account to keep them →',
+  account_privacy: isZh ? '你寫的，只有你知道。' : 'Your answers are stored securely. They are never shared, sold, or read by anyone.',
+  account_signed: isZh ? '已登入：' : 'Signed in as',
+  account_signout: isZh ? '登出 →' : 'Sign out →',
+
+  // Auth modal
+  auth_records: isZh ? '你的記錄' : 'Your records',
+  auth_reason: isZh ? '想把你的記錄同步到所有裝置嗎？' : 'Would you like to save your records across devices?',
+  auth_signin: isZh ? '登入' : 'Sign in',
+  auth_signup: isZh ? '建立帳號' : 'Create account',
+  auth_email: isZh ? '電子郵件' : 'Email',
+  auth_password: isZh ? '密碼' : 'Password',
+  auth_skip: isZh ? '不建立帳號，繼續使用 →' : 'Continue without an account →',
+
+  // Salary modal
+  salary_label: isZh ? '先問一件事' : 'One thing first',
+  salary_q: isZh ? '你的月薪大約是多少？' : 'What is your approximate monthly salary?',
+  salary_note: isZh ? '僅供計算使用。這個數字只有你知道。' : 'Used only to calculate how many hours of your life each purchase costs. Stored locally. Never shared.',
+  salary_continue: isZh ? '繼續' : 'Continue',
+  salary_skip: isZh ? '略過，我不想說' : "Skip — I'd rather not say",
+
+  // Toasts
+  toast_choose: isZh ? '就算不舒服，也請選一個。' : 'Choose one. However uncomfortable.',
+  toast_write: isZh ? '寫點什麼，哪怕只是一點點。' : 'Write something. However small.',
+  toast_why: isZh ? '為什麼，比買什麼更重要。' : 'The why matters more than the what.',
+  toast_name_amount: isZh ? '至少給個名字和金額。' : 'A name and a number, at the very least.',
+  toast_forgotten: isZh ? '已經忘了。但錢不會回來。' : 'Already forgotten. The money, however, is not coming back.',
+  toast_worth_it: isZh ? '很好，那就值得了。這個區別很重要。' : 'Good. Then it was worth it. That distinction matters.',
+  toast_saved: isZh ? '存下了，只屬於你。' : 'Saved. It belongs to no one else.',
+  toast_noted: isZh ? '悄悄記下了，只有你知道。' : 'Noted quietly. Yours alone.',
+  toast_sit: isZh ? '再想一下。' : 'Sit with it a little longer.',
+  toast_removed: isZh ? '已從記錄中移除。' : 'Removed from the record.',
+  toast_synced: isZh ? '你的記錄已同步到所有裝置。' : 'Your records are now saved across devices.',
+  toast_numbers_wait: isZh ? '知道了，數字會在這裡等你準備好。' : 'Noted. The numbers will still be here when you are ready.',
+  toast_begin_honest: isZh ? '有些事改變了，很好，誠實地重新開始。' : 'Something has changed. Good. Begin honestly.',
+
+  // Crisis note
+  crisis: isZh ? '這個 app 是為了自我反思，不是危機支援。如果你需要幫助，請找一個可以支持你的人。' : 'This app is for reflection, not crisis support. If you are struggling, please reach out to someone who can help.',
+
+  // Placeholders
+  ph_ob1_other: isZh ? '自由書寫，沒有標準答案。' : 'Write freely. There are no correct answers here.',
+  ph_freedom_last: isZh ? '例如：三年前，或者我已經不記得了' : "e.g. three years ago, I can't remember",
+  ph_escape_fund: isZh ? '例如：20000' : 'e.g. 20000',
+  ph_freedom_block: isZh ? '例如：金錢、人、恐懼' : 'e.g. money, people, fear',
+  ph_work_what: isZh ? '具體說說，模糊的夢想很容易被忽略。' : 'Be specific. Vague dreams are easy to ignore.',
+  ph_work_hours: isZh ? '例如：10' : 'e.g. 10',
+  ph_work_last: isZh ? '例如：上個月、好幾年前、從來沒有' : 'e.g. last month, years ago, never',
+  ph_limit: isZh ? '對自己誠實。' : 'Be honest with yourself.',
+  ph_other_fund: isZh ? '例如：15000' : 'e.g. 15000',
+  ph_other_years: isZh ? '例如：5（年）' : 'e.g. 5 (years)',
+  ph_other_days_year: isZh ? '例如：20' : 'e.g. 20',
+  ph_partner_hours: isZh ? '例如：3' : 'e.g. 3',
+  ph_partner_days: isZh ? '例如：3' : 'e.g. 3',
+  ph_age_parent: isZh ? '例如：68' : 'e.g. 68',
+  ph_days_together: isZh ? '例如：12' : 'e.g. 12',
+  ph_child_age: isZh ? '例如：6' : 'e.g. 6',
+  ph_child_hours: isZh ? '例如：2' : 'e.g. 2',
+  ph_other_who: isZh ? '例如：我最好的朋友、兄弟姊妹' : 'e.g. my best friend, my sibling',
+  ph_other_days: isZh ? '例如：8' : 'e.g. 8',
+  ph_salary: isZh ? '例如：3000' : 'e.g. 3000',
+
+  // Toasts in ob2
+  toast_who: isZh ? '請告訴我們這是關於誰。' : 'Tell us who this is about.',
+
+  // Ob2 sub default
+  ob2_sub_default: isZh ? '接下來的問題，會因你的答案而不同。' : 'Tell us about the person most central to your answer.',
+
+  // Distress note
+  distress: isZh ? '這不是評判，而是資訊。你可以用它做什麼，完全是你的選擇。' : 'This is not a judgement. It is information. What you do with it is entirely yours.',
+
+  // Auth modal extra
+  auth_email_label: isZh ? '電子郵件' : 'Email',
+  auth_password_label: isZh ? '密碼' : 'Password',
+  auth_email_ph: isZh ? '你的電子郵件' : 'your@email.com',
+  auth_password_ph_signin: isZh ? '••••••••' : '••••••••',
+  auth_password_ph_signup: isZh ? '至少 6 個字元' : 'At least 6 characters',
+  auth_skip_btn: isZh ? '不建立帳號，繼續使用 →' : 'Continue without an account →',
+  auth_show: isZh ? '顯示' : 'show',
+  auth_hide: isZh ? '隱藏' : 'hide',
+  auth_signin_btn: isZh ? '登入' : 'Sign in',
+  auth_signup_btn: isZh ? '建立帳號' : 'Create account',
+  auth_toast_missing: isZh ? '請填入電子郵件和密碼。' : 'Email and password, please.',
+  auth_toast_short: isZh ? '密碼至少需要 6 個字元。' : 'Password must be at least 6 characters.',
+  auth_toast_wrong: isZh ? '電子郵件或密碼不正確。' : 'Incorrect email or password.',
+
+  // Validation toasts
+  toast_age: isZh ? '他們幾歲？' : 'How old are they?',
+  toast_days_together: isZh ? '你們一年實際相處幾天？' : 'And how many days a year do you actually spend together?',
+  toast_child_hours: isZh ? '你每天真正陪伴他們幾個小時？' : 'And how many hours a day are you truly present with them?',
+  toast_live_together: isZh ? '你們住在一起嗎？' : 'Do you live together? This matters.',
+  toast_partner_hours: isZh ? '你們每天真正在一起幾個小時？' : 'How many hours a day do you truly spend together?',
+  toast_partner_days: isZh ? '你們通常一週見幾天？' : 'How many days per week do you see each other?',
+  toast_other_person: isZh ? '請告訴我們這是關於誰。' : 'Tell us who this person is.',
+  toast_other_days: isZh ? '你們一年實際見幾天？' : 'And how many days a year do you actually see them?',
+  toast_freedom_last: isZh ? '你上一次真正說走就走，是什麼時候？' : 'When did you last truly act on that freedom?',
+  toast_escape_fund: isZh ? '你需要多少錢，才能真正離開？' : 'And how much would you need to actually leave?',
+  toast_work_what: isZh ? '那件事，具體是什麼？' : 'Tell us what that work is — be specific.',
+  toast_work_hours: isZh ? '你願意每週投入幾個小時？' : 'And how many hours a week would you give it?',
+  toast_dimension: isZh ? '主要是錢的問題，還是時間的問題？' : 'Is it money or time that stands in the way?',
+  toast_other_fund: isZh ? '需要多少錢，才能讓這件事成真？' : 'How much would it take?',
+
+  // Followup modal
+  followup_label: isZh ? '七天後' : 'Seven days later',
+  followup_q: isZh ? '你買了一件讓自己感覺好一點的東西。' : 'You bought something whilst feeling rather low.',
+  followup_forgotten: isZh ? '說實話，我幾乎已經忘了。' : "Honestly — I had nearly forgotten.",
+  followup_worth_it: isZh ? '值得，我不後悔。' : 'Still, it was worth it.',
+
+  // Record modal
+  record_modal_what_ph: isZh ? '你買了什麼？' : 'What did you buy?',
+
+  // Ob labels not in template literals
+  ob_other_fund_label: isZh ? '需要多少錢，才能讓這件事成真？' : 'How much would make this possible?',
+  ob_other_time_label: isZh ? '你覺得你還有多少時間？' : 'How much time do you think you still have for this?',
+  ob_other_days_label: isZh ? '每年可以投入幾天？' : 'How many days per year could you dedicate to it?',
+  auth_toast_confirm: isZh ? '請確認你的電子郵件以完成註冊。' : 'Check your email to confirm your account.',
+
+  // Annual slider question
+  annual_slider_q_text: isZh ? '你說你的生活有 {x}% 是真正屬於你的。現在呢？' : 'You said your life was {x}% yours. What would you say now?',
+
+  // Days remaining
+  days_remaining: isZh ? '天' : 'days remaining',
+  days_remaining_sub: isZh ? '在你們的時間窗口裡' : 'in your window',
+
+  // Monthly question label
+  monthly_q_label: isZh ? '本月一問' : "This month's question",
+
+  // Annual empty
+  annual_nothing: isZh ? '尚無記錄，先記下一筆誠實的消費。' : 'Nothing recorded yet. Begin with one honest entry.',
+
+  // App dynamic labels
+  window_label_parent: isZh ? (days, person) => `與${person}剩餘約 ${days.toLocaleString()} 天，不是年，是天。` : (days, person) => `You have approximately ${days.toLocaleString()} days remaining with ${person}. Not years. Days.`,
+  window_label_freedom: isZh ? '這是橫在你和自由之間的距離。每一筆消費，讓你更近或更遠。' : 'That is what stands between you and it. Every purchase moves you closer or further away.',
+  window_bar_parent: isZh ? (person) => `與${person}剩餘的時間` : (person) => `days remaining\nwith ${person}`,
+  window_bar_default: isZh ? '你的時間窗口' : 'days remaining\nin your window',
+  window_bar_freedom: isZh ? '距離逃脫基金' : 'towards escape fund',
+  app_empty_state: isZh ? '尚無記錄。\n這要麼值得讚賞，要麼值得懷疑。' : 'Nothing recorded yet.\nWhich is either admirable or dishonest.',
+  ledger_title_zh: '消費記錄',
+  fab_label: isZh ? '+ 記下來' : '+ Record',
+  ph_what_bought: isZh ? '你買了什麼？' : 'What did you buy?',
+  motive_label_text: isZh ? '說實話，為什麼？' : 'Why, honestly?',
+
+  // Welcome messages
+  welcome_person: isZh ? '你說過，你最不想錯過的是陪伴你愛的人。看看你的時間和金錢，究竟去了哪裡。' : 'You said the one thing you most dread missing is time with someone you love. See where it has actually been going.',
+  welcome_freedom: isZh ? '你說過，你最不想錯過的是說走就走的自由。先看看是什麼讓你走不了。' : 'You said what you most dread missing is the freedom to leave. Begin by seeing what is keeping you here.',
+  welcome_work: isZh ? '你說過，你最不想錯過的是做自己真正熱愛的事。看看你用什麼換掉了它。' : 'You said what you most dread missing is work you actually love. Find out what you have been trading it for.',
+};
+
+// ── APPLY TRANSLATIONS ──
+function applyTranslations() {
+  if (!isZh) return;
+
+  // Splash
+  const splashTagline = document.getElementById('splash-tagline');
+  if (splashTagline) splashTagline.textContent = t.splash_tagline;
+  const splashBegin = document.getElementById('splash-begin');
+  if (splashBegin) splashBegin.textContent = t.splash_begin;
+  const splashSignin = document.getElementById('splash-signin');
+  if (splashSignin) splashSignin.textContent = t.splash_signin;
+  const splashFooter = document.getElementById('splash-footer');
+  if (splashFooter) splashFooter.textContent = t.splash_footer;
+
+  // Crisis note
+  const crisisNote = document.getElementById('ob1-crisis');
+  if (crisisNote) crisisNote.textContent = t.crisis;
+
+  // Followup modal
+  const followupLabel = document.getElementById('followup-label-el');
+  if (followupLabel) followupLabel.textContent = t.followup_label;
+  const followupQ = document.getElementById('followup-q-el');
+  if (followupQ) followupQ.textContent = t.followup_q;
+  const followupForgotten = document.getElementById('followup-forgotten-btn');
+  if (followupForgotten) followupForgotten.textContent = t.followup_forgotten;
+  const followupWorth = document.getElementById('followup-worth-btn');
+  if (followupWorth) followupWorth.textContent = t.followup_worth_it;
+
+  // Record modal placeholder handled below
+
+  // Splash eyebrow
+  const splashEyebrow = document.querySelector('.splash-eyebrow');
+  if (splashEyebrow) splashEyebrow.textContent = isZh ? '時間 · 金錢 · 生命' : 'Time · Money · Life';
+
+  // Back buttons
+  const backOb2 = document.getElementById('back-ob2');
+  if (backOb2) backOb2.textContent = isZh ? '← 返回' : '← Back';
+  const backOb3 = document.getElementById('back-ob3');
+  if (backOb3) backOb3.textContent = isZh ? '← 返回' : '← Back';
+
+  // Continue buttons
+  const ob1Next = document.getElementById('ob1-next');
+  if (ob1Next) ob1Next.querySelector('span:first-child').textContent = isZh ? '繼續' : 'Continue';
+  const ob2Next = document.getElementById('ob2-next');
+  if (ob2Next) ob2Next.querySelector('span:first-child').textContent = isZh ? '繼續' : 'Continue';
+
+  // Ob3 Enter button
+  const ob3Enter = document.querySelector('#screen-ob3 .btn-next span:first-child');
+  if (ob3Enter) ob3Enter.textContent = isZh ? '進入' : 'Enter';
+
+  // Days remaining label
+  const windowLabel = document.getElementById('app-window-label');
+  if (windowLabel) windowLabel.innerHTML = isZh ? `天<br>剩餘時間` : `days remaining<br>in your window`;
+
+  // Monthly question label
+  const monthlyQLabel = document.getElementById('monthly-q-label-el');
+  if (monthlyQLabel) monthlyQLabel.textContent = t.monthly_q_label;
+
+  // Annual window sub
+  const annualWindowSub = document.getElementById('annual-window-sub');
+  if (annualWindowSub) annualWindowSub.textContent = isZh ? '天剩餘' : 'days remaining';
+
+  // Annual slider question
+  const annualQ1 = document.getElementById('annual-slider-q-text');
+  const annualQ2 = document.getElementById('annual-slider-q-text2');
+  const annualWas = document.getElementById('annual-slider-was');
+  if (annualQ1 && annualWas && annualQ2) {
+    if (isZh) {
+      annualQ1.textContent = '你說你的生活有 ';
+      annualQ2.innerHTML = '% 是真正屬於你的。<br><br>現在呢？';
+    }
+  }
+
+  // Auth modal labels and buttons
+  ['signin', 'signup'].forEach(type => {
+    const emailLabel = document.getElementById(`auth-email-label-${type}`);
+    if (emailLabel) emailLabel.textContent = t.auth_email_label;
+    const passLabel = document.getElementById(`auth-password-label-${type}`);
+    if (passLabel) passLabel.textContent = t.auth_password_label;
+  });
+
+  const signinEmail = document.getElementById('signin-email');
+  if (signinEmail) signinEmail.placeholder = t.auth_email_ph;
+  const signupEmail = document.getElementById('signup-email');
+  if (signupEmail) signupEmail.placeholder = t.auth_email_ph;
+  const signupPass = document.getElementById('signup-password');
+  if (signupPass) signupPass.placeholder = t.auth_password_ph_signup;
+
+  const authSkipBtn = document.getElementById('auth-skip-btn');
+  if (authSkipBtn) authSkipBtn.textContent = t.auth_skip_btn;
+  const authSigninSubmit = document.getElementById('auth-signin-submit');
+  if (authSigninSubmit) authSigninSubmit.textContent = t.auth_signin_btn;
+  const authSignupSubmit = document.getElementById('auth-signup-submit');
+  if (authSignupSubmit) authSignupSubmit.textContent = t.auth_signup_btn;
+
+  // Password toggle buttons
+  document.querySelectorAll('.password-toggle').forEach(btn => {
+    btn.textContent = t.auth_show;
+  });
+
+  // Account section
+  const acPrompt = document.getElementById('account-prompt');
+  if (acPrompt && !currentUser) acPrompt.textContent = t.account_local;
+  const acBtn = document.getElementById('account-btn');
+  if (acBtn && !currentUser) acBtn.textContent = t.account_create;
+
+  // Privacy note
+  document.querySelectorAll('.begin-again-prompt').forEach(el => {
+    if (el.textContent.includes('stored securely') || el.textContent.includes('你寫的')) {
+      el.textContent = t.account_privacy;
+    }
+  });
+  const ob1Q = document.querySelector('#screen-ob1 .question-text');
+  if (ob1Q) ob1Q.textContent = t.ob1_question;
+  const ob1Sub = document.querySelector('#screen-ob1 .question-sub');
+  if (ob1Sub) ob1Sub.textContent = t.ob1_sub;
+  const ob1Ta = document.getElementById('ob1-answer');
+  if (ob1Ta) ob1Ta.placeholder = t.ph_ob1_other;
+
+  // Ob2 default sub
+  const ob2Sub = document.getElementById('ob2-sub');
+  if (ob2Sub) ob2Sub.textContent = t.ob2_sub_default;
+
+  // Ob3 static content
+  const ob3Q = document.getElementById('ob3-question');
+  if (ob3Q) ob3Q.textContent = t.ob3_question;
+  const ob3Sub = document.getElementById('ob3-sub');
+  if (ob3Sub) ob3Sub.textContent = t.ob3_sub;
+  const ob3SalaryQ = document.getElementById('ob3-salary-q');
+  if (ob3SalaryQ) ob3SalaryQ.textContent = t.ob3_salary_q;
+  const salaryInput = document.getElementById('salary-input');
+  if (salaryInput) salaryInput.placeholder = t.ph_salary;
+
+  // Nav
+  const navNow = document.getElementById('nav-now');
+  if (navNow) navNow.textContent = t.nav_now;
+  const navMirror = document.getElementById('nav-mirror');
+  if (navMirror) navMirror.textContent = t.nav_mirror;
+
+  // Onboarding 1 — question and sub
+  const questions = document.querySelectorAll('.question-text');
+  if (questions[0]) questions[0].textContent = t.ob1_question;
+  const subs = document.querySelectorAll('.question-sub');
+  if (subs[0]) subs[0].textContent = t.ob1_sub;
+
+  // Longing options
+  const optMap = { person: t.ob1_opt_person, freedom: t.ob1_opt_freedom, work: t.ob1_opt_work, other: t.ob1_opt_other };
+  document.querySelectorAll('.longing-opt[data-type]').forEach(btn => {
+    const key = btn.getAttribute('data-type');
+    if (optMap[key]) btn.textContent = optMap[key];
+  });
+
+  // Ob1 placeholder
+  const ob1Answer = document.getElementById('ob1-answer');
+  if (ob1Answer) ob1Answer.placeholder = t.ob1_placeholder;
+
+  // North star label
+  const nsLabel = document.querySelector('.north-star-label');
+  if (nsLabel) nsLabel.textContent = t.north_star_label;
+
+  // Stat labels
+  const statCards = document.querySelectorAll('.stat-card');
+  const statData = [
+    { val: 'stat-total', label: t.stat_total },
+    { val: 'stat-hours', label: t.stat_hours },
+    { val: 'stat-impulse', label: t.stat_impulse },
+    { val: 'stat-forgotten', label: t.stat_forgotten },
+  ];
+  statData.forEach(({ val, label }) => {
+    const card = document.getElementById(val)?.closest('.stat-card');
+    if (card) {
+      const labelEl = card.querySelector('.stat-card-label');
+      if (labelEl) labelEl.textContent = label;
+    }
+  });
+
+  // Record modal title
+  const recTitle = document.querySelector('.record-modal-title');
+  if (recTitle) recTitle.textContent = t.record_title;
+
+  // Record modal input placeholder
+  const expName = document.getElementById('exp-name');
+  if (expName) expName.placeholder = t.ph_what_bought;
+
+  // Motive label
+  const motiveLabel = document.getElementById('motive-label-text');
+  if (motiveLabel) motiveLabel.textContent = t.motive_label_text;
+
+  // FAB label
+  const fabLabel = document.getElementById('fab-label');
+  if (fabLabel) fabLabel.textContent = t.fab_label;
+
+  // Ledger title
+  const ledgerTitle = document.getElementById('ledger-title');
+  if (ledgerTitle) ledgerTitle.textContent = isZh ? '消費記錄' : 'The ledger';
+
+  // Empty state
+  const emptyState = document.getElementById('empty-state-text');
+  if (emptyState) emptyState.innerHTML = isZh ? '尚無記錄。<br>這要麼值得讚賞，要麼值得懷疑。' : 'Nothing recorded yet.<br>Which is either admirable or dishonest.';
+
+  // Window bar label default
+  const appWindowLabel = document.getElementById('app-window-label');
+  if (appWindowLabel) appWindowLabel.innerHTML = isZh ? '你的時間窗口' : 'days remaining<br>in your window';
+
+  // Annual window sub
+  const annualWindowSubEl = document.getElementById('annual-window-sub');
+  if (annualWindowSubEl) annualWindowSubEl.textContent = isZh ? '剩餘時間' : 'days remaining';
+
+  // Stat total label
+  const statTotalLabel = document.getElementById('stat-total-label');
+  if (statTotalLabel) statTotalLabel.innerHTML = isZh ? '本月花費' : 'spent<br>this month';
+
+  // Motive buttons
+  const motiveMap = {
+    'I needed it': t.motive_needed, 'I wanted it': t.motive_wanted,
+    'I was bored': t.motive_bored, 'I was unhappy': t.motive_unhappy,
+    'A treat to myself': t.motive_treat, "I don't know": t.motive_unknown,
+  };
+  document.querySelectorAll('.motive-btn').forEach(btn => {
+    const m = btn.getAttribute('data-m');
+    if (motiveMap[m]) btn.textContent = motiveMap[m];
+  });
+
+  // Submit expense button
+  document.querySelectorAll('.submit-expense').forEach(btn => {
+    btn.textContent = t.record_btn;
+  });
+
+  // Mirror layer labels
+  const mirrorLabels = document.querySelectorAll('.mirror-layer-label');
+  if (mirrorLabels[0]) mirrorLabels[0].textContent = t.mirror_this_month;
+  if (mirrorLabels[1]) mirrorLabels[1].textContent = t.mirror_question;
+
+  // Mirror year divider
+  const mirrorYear = document.querySelector('.mirror-year-divider span');
+  if (mirrorYear) mirrorYear.textContent = t.mirror_this_year;
+
+  // Mirror reflect question
+  const reflectQ = document.querySelector('.report-question');
+  if (reflectQ) reflectQ.textContent = t.mirror_reflect_q;
+
+  // Mirror placeholders
+  const weeklyTA = document.getElementById('weekly-answer');
+  if (weeklyTA) weeklyTA.placeholder = t.mirror_placeholder;
+  const monthlyTA = document.getElementById('monthly-answer');
+  if (monthlyTA) monthlyTA.placeholder = t.mirror_monthly_placeholder;
+
+  // Save buttons
+  document.querySelectorAll('.report-submit').forEach(btn => {
+    btn.textContent = t.mirror_save;
+  });
+
+  // Annual section labels
+  const annualLabels = document.querySelectorAll('.annual-section-label');
+  const annualKeys = [t.annual_said, t.annual_followed, t.annual_window];
+  annualLabels.forEach((el, i) => { if (annualKeys[i]) el.textContent = annualKeys[i]; });
+
+  // Begin again
+  const baPrompts = document.querySelectorAll('.begin-again-prompt');
+  if (baPrompts[0]) baPrompts[0].textContent = t.begin_again_prompt;
+  const baBtns = document.querySelectorAll('.begin-again-btn');
+  if (baBtns[0]) baBtns[0].textContent = t.begin_again_btn;
+
+  // Salary modal
+  document.querySelectorAll('.followup-label').forEach(el => {
+    if (el.closest('#salary-modal')) el.textContent = t.salary_label;
+  });
+  document.querySelectorAll('.followup-q').forEach(el => {
+    if (el.closest('#salary-modal')) el.textContent = t.salary_q;
+  });
+  const salaryNote = document.querySelector('#salary-modal [style*="font-size:13px"]');
+  if (salaryNote) salaryNote.textContent = t.salary_note;
+  document.querySelectorAll('.followup-opt').forEach(btn => {
+    if (btn.closest('#salary-modal')) {
+      if (btn.getAttribute('onclick')?.includes('saveSalary')) btn.textContent = t.salary_continue;
+      if (btn.getAttribute('onclick')?.includes('skipSalary')) btn.textContent = t.salary_skip;
+    }
+  });
+
+  // Auth modal
+  document.querySelectorAll('.followup-label').forEach(el => {
+    if (el.closest('#auth-modal')) el.textContent = t.auth_records;
+  });
+  const authReason = document.getElementById('auth-reason');
+  if (authReason) authReason.textContent = t.auth_reason;
+  document.getElementById('auth-tab-signin') && (document.getElementById('auth-tab-signin').textContent = t.auth_signin);
+  document.getElementById('auth-tab-signup') && (document.getElementById('auth-tab-signup').textContent = t.auth_signup);
+
+  // Begin again modal
+  document.querySelectorAll('.followup-label').forEach(el => {
+    if (el.closest('#begin-again-modal')) el.textContent = t.begin_again_label;
+  });
+  document.querySelectorAll('.followup-q').forEach(el => {
+    if (el.closest('#begin-again-modal')) el.textContent = t.begin_again_q;
+  });
+  document.querySelectorAll('.followup-opt').forEach(btn => {
+    if (btn.closest('#begin-again-modal')) {
+      if (btn.getAttribute('onclick')?.includes('true')) btn.textContent = t.begin_again_yes;
+      if (btn.getAttribute('onclick')?.includes('false')) btn.textContent = t.begin_again_no;
+    }
+  });
+}
+
+let selectedLongingType = '';
+
+// ── SUPABASE ──
+const SUPABASE_URL = 'https://aeyrdjyowwopkluckjlb.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFleXJkanlvd3dvcGtsdWNramxiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1NzA2NjYsImV4cCI6MjA5MzE0NjY2Nn0.SIJQ2ozMfvJKeDR8JwZWMd4ome5QPrUhmtN6gZOnLG4';
+
+const _supabaseAvailable = typeof supabase !== 'undefined' && !window._supabaseLoadFailed;
+const db = _supabaseAvailable ? supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+  auth: { autoRefreshToken: true, persistSession: true, detectSessionInUrl: true }
+}) : null;
+
+let currentUser = null;
+
+// Check auth on load — non-blocking, runs after splash
+async function initAuth() {
+  if (!db) return; // local mode — Supabase not available
+  try {
+    const { data: { session } } = await db.auth.getSession();
+    if (session?.user) {
+      currentUser = session.user;
+      await loadUserData();
+    }
+    db.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session?.user) {
+        currentUser = session.user;
+        document.getElementById('auth-modal').classList.remove('open');
+        // Load data first — only save onboarding if we have local data to sync
+        const hadLocalData = !!state.longing;
+        await loadUserData();
+        if (hadLocalData) await saveOnboarding();
+        showToast(t.toast_synced);
+      } else if (event === 'SIGNED_OUT') {
+        currentUser = null;
+        populateApp();
+      }
+    });
+  } catch(e) {
+    console.warn('Supabase auth unavailable — running in local mode.', e);
+  }
+}
+
+// Show auth modal
+function togglePassword(id, btn) {
+  const input = document.getElementById(id);
+  const isPassword = input.type === 'password';
+  input.type = isPassword ? 'text' : 'password';
+  btn.textContent = isPassword ? t.auth_hide : t.auth_show;
+}
+
+function openAuthModal(reason) {
+  if (!db) { showToast(isZh ? '雲端同步在此環境中不可用。' : 'Cloud sync is not available in this environment.'); return; }
+  if (currentUser) {
+    showToast(`Already signed in as ${currentUser.email}`);
+    return;
+  }
+  document.getElementById('auth-reason').textContent = reason || 'Create a free account to save your records across devices.';
+  document.getElementById('auth-modal').classList.add('open');
+  document.getElementById('auth-tab-signin').click();
+}
+
+function closeAuthModal() {
+  document.getElementById('auth-modal').classList.remove('open');
+}
+
+function switchAuthTab(tab) {
+  document.getElementById('auth-tab-signin').classList.toggle('active', tab === 'signin');
+  document.getElementById('auth-tab-signup').classList.toggle('active', tab === 'signup');
+  document.getElementById('auth-signin-form').style.display = tab === 'signin' ? 'block' : 'none';
+  document.getElementById('auth-signup-form').style.display = tab === 'signup' ? 'block' : 'none';
+}
+
+async function handleSignUp() {
+  const email = document.getElementById('signup-email').value.trim();
+  const password = document.getElementById('signup-password').value;
+  if (!email || !password) { showToast(t.auth_toast_missing); return; }
+  if (password.length < 6) { showToast(t.auth_toast_short); return; }
+  const { error } = await db.auth.signUp({ email, password });
+  if (error) { showToast(error.message); return; }
+  showToast(t.auth_toast_confirm);
+}
+
+async function handleSignIn() {
+  const email = document.getElementById('signin-email').value.trim();
+  const password = document.getElementById('signin-password').value;
+  if (!email || !password) { showToast(t.auth_toast_missing); return; }
+  const { error } = await db.auth.signInWithPassword({ email, password });
+  if (error) { showToast(t.auth_toast_wrong); return; }
+}
+
+async function handleSignOut() {
+  await db.auth.signOut();
+  showToast(isZh ? '已登出。你的本地記錄仍保留在這台裝置上。' : 'Signed out. Your local records remain on this device.');
+}
+
+// Save onboarding to Supabase
+async function saveOnboarding() {
+  if (!db || !currentUser) return;
+  const { error } = await db.from('onboarding').upsert({
+    user_id: currentUser.id,
+    longing_type: selectedLongingType,
+    longing_text: state.longing,
+    selected_relation: state.selectedRelation,
+    window_days: state.windowDays,
+    window_person: state.windowPerson,
+    escape_fund: state.escapeFund,
+    work_hours_per_week: state.workHoursPerWeek,
+    other_dimension: state.otherDimension,
+    other_fund: state.otherFund,
+    life_percent: state.lifePercent,
+    hourly_rate: state.hourlyRate,
+    salary_set: state.salarySet,
+    updated_at: new Date().toISOString(),
+  }, { onConflict: 'user_id' });
+  if (error) console.error('Onboarding save error:', error);
+}
+
+// Save expense to Supabase
+async function saveExpenseToDb(exp) {
+  if (!db || !currentUser) return;
+  const { error } = await db.from('expenses').insert({
+    user_id: currentUser.id,
+    name: exp.name,
+    amount: exp.amount,
+    motive: exp.motive,
+    is_escaping: exp.isEscaping,
+    expense_date: exp.date,
+    expense_month: exp.month,
+    expense_year: exp.year,
+  });
+  if (error) console.error('Expense save error:', error);
+}
+
+// Save weekly answer to Supabase
+async function saveWeeklyToDb(answer) {
+  if (!db || !currentUser) return;
+  await db.from('weekly_answers').insert({ user_id: currentUser.id, answer });
+}
+
+// Save monthly answer to Supabase
+async function saveMonthlyToDb(question, answer) {
+  if (!db || !currentUser) return;
+  await db.from('monthly_answers').insert({ user_id: currentUser.id, question, answer });
+}
+
+// Load all user data from Supabase
+async function loadUserData() {
+  if (!db || !currentUser) return;
+
+  // Load onboarding
+  const { data: ob } = await db.from('onboarding').select('*').eq('user_id', currentUser.id).single();
+  if (ob) {
+    selectedLongingType = ob.longing_type || '';
+    state.longing = ob.longing_text || '';
+    state.selectedRelation = ob.selected_relation || '';
+    state.windowDays = ob.window_days || 0;
+    state.windowPerson = ob.window_person || '';
+    state.escapeFund = ob.escape_fund || 0;
+    state.workHoursPerWeek = ob.work_hours_per_week || 0;
+    state.otherDimension = ob.other_dimension || '';
+    state.otherFund = ob.other_fund || 0;
+    state.lifePercent = ob.life_percent || 40;
+    state.hourlyRate = ob.hourly_rate || 8.33;
+    state.salarySet = ob.salary_set || false;
+  }
+
+  // Load expenses
+  const { data: expenses } = await db.from('expenses').select('*')
+    .eq('user_id', currentUser.id).order('created_at', { ascending: false });
+  if (expenses) {
+    state.expenses = expenses.map(e => ({
+      id: e.id, name: e.name, amount: e.amount,
+      motive: e.motive, isEscaping: e.is_escaping,
+      forgotten: e.forgotten, date: e.expense_date,
+      month: e.expense_month, year: e.expense_year,
+      time: new Date(e.created_at).toLocaleTimeString(userLocale, { hour: '2-digit', minute: '2-digit' }),
+        dateDisplay: formatDate(new Date(e.expense_date)),
+    }));
+    localStorage.setItem('whilst_exp', JSON.stringify(state.expenses));
+  }
+
+  if (ob && state.longing) {
+    populateApp();
+    goTo('screen-app');
+  } else if (currentUser && !state.longing) {
+    // Signed in but no onboarding — go to onboarding
+    goTo('screen-ob1');
+  }
+}
+
+// ── STATE ──
+let state = {
+  longing: '',
+  windowPerson: '',
+  windowDays: 0,
+  windowAge: 0,
+  lifePercent: 40,
+  expenses: JSON.parse(localStorage.getItem('whilst_exp') || '[]'),
+  weeklyAnswers: JSON.parse(localStorage.getItem('whilst_weekly') || '[]'),
+  monthlyAnswers: JSON.parse(localStorage.getItem('whilst_monthly') || '[]'),
+  followupQueue: JSON.parse(localStorage.getItem('whilst_followup') || '[]'),
+  selectedMotive: '',
+  selectedRelation: '',
+  partnerLivesTogether: undefined,
+  otherDimension: '',
+  otherFund: 0,
+  hourlyRate: 8.33,
+  escapeFund: 0,
+  workHoursPerWeek: 0, // default ~£2000/month
+  salarySet: false,
+  _pendingExpense: null,
+};
+
+// Load saved salary
+const savedSalary = localStorage.getItem('whilst_salary');
+if (savedSalary) {
+  state.hourlyRate = parseFloat(savedSalary) / 30 / 8;
+  state.salarySet = true;
+}
+
+const monthlyQuestions = [
+  '"If your work paid nothing at all, would you still do it?"',
+  '"When did you last do something purely for the joy of it, with no productive outcome whatsoever?"',
+  '"What have you been postponing until you have more time? And how long have you been saying that?"',
+  '"Are you spending your money, or spending your life?"',
+  '"The last time you said \'I\'ll do it when I retire\', what was it? And why not now?"',
+  '"What does your spending say about what you actually value, rather than what you claim to?"',
+  '"If someone observed only your bank statements, who would they think you are?"',
+  '"You are trading hours of your finite life for money. Are you trading them wisely?"',
+  '"When did \'getting through the week\' become the ambition?"',
+  '"What are you compensating for when you buy things you don\'t need?"',
+  '"Is your current life the one you\'re living, or the one you\'re preparing to live?"',
+  '"If you died next year, would you regret how you spent this one?"',
+  '"How much of what you bought this month was genuinely for you, and how much was for how you appear to others?"',
+  '"If no one could see what you owned, what would you still want?"',
+  '"Which of your purchases this month would you be embarrassed to explain out loud?"',
+  '"Are you buying things, or buying the version of yourself you wish others would see?"',
+  '"When did you last prioritise someone you love over something you wanted to buy?"',
+  '"What would change about your spending if you stopped caring what anyone thought?"',
+  '"The things you own, do they represent who you are, or who you are trying to become?"',
+  '"How many of this month\'s purchases were decisions, and how many were just habits?"',
+  '"If your spending were a diary entry, what would it say about what mattered to you this month?"',
+  '"What is the most honest thing your bank statement reveals about you?"',
+  '"Is there something you keep buying that you know is not really the thing you need?"',
+  '"What would you do with your money if you had nothing left to prove?"',
+];
+
+const monthlyQuestionsZh = [
+  '「如果你的工作完全沒有薪水，你還會繼續做嗎？」',
+  '「你上一次純粹為了開心做一件事，完全不在乎有沒有任何產出，是什麼時候？」',
+  '「你一直說等有時間再做的那件事是什麼？你說這句話多久了？」',
+  '「你花的是錢，還是你的人生？」',
+  '「你上一次說「等我退休再做」，是什麼事？為什麼不是現在？」',
+  '「你的消費紀錄，說明了你真正在乎什麼，而不是你口頭上說在乎的。它說了什麼？」',
+  '「如果有人只看你的帳單，他們會覺得你是個什麼樣的人？」',
+  '「你用有限的生命換取金錢。你換得值得嗎？」',
+  '「你是從什麼時候開始，把「撐過這一週」當成目標的？」',
+  '「你買那些不需要的東西時，你在彌補什麼？」',
+  '「你現在過的生活，是你真正在活的，還是你準備要開始活的？」',
+  '「如果你明年就離開了，你會後悔今年是怎麼過的嗎？」',
+  '「這個月買的東西，有多少真的是為了自己，有多少是為了別人眼中的你？」',
+  '「如果沒有人知道你擁有什麼，你還會想要什麼？」',
+  '「這個月的消費裡，哪一筆你說出口會覺得不好意思？」',
+  '「你買的是東西，還是你希望別人看到的那個你？」',
+  '「你上一次把你愛的人放在購物欲望之前，是什麼時候？」',
+  '「如果你不再在乎別人怎麼想，你的消費習慣會有什麼不同？」',
+  '「你擁有的那些東西，代表的是現在的你，還是你想成為的那個你？」',
+  '「這個月的消費，有多少是你主動決定的，有多少只是習慣？」',
+  '「如果你的消費紀錄是一篇日記，它會說這個月你最在乎的是什麼？」',
+  '「你的帳單，最誠實地揭露了你什麼？」',
+  '「有沒有什麼東西你一直在買，但你知道那根本不是你真正需要的？」',
+  '「如果你不再需要向任何人證明什麼，你會怎麼花錢？」',
+];
+
+// ── NAVIGATION ──
+function goTo(screenId) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(screenId).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function checkOb1() {
+  const val = document.getElementById('ob1-answer').value.trim();
+  const btn = document.getElementById('ob1-next');
+  if (val.length > 0) btn.classList.add('ready');
+  else btn.classList.remove('ready');
+}
+
+function selectLonging(btn, type) {
+  document.querySelectorAll('.longing-opt').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedLongingType = type;
+
+  const textarea = document.getElementById('ob1-answer');
+  const hint = document.getElementById('ob1-hint');
+  const nextBtn = document.getElementById('ob1-next');
+
+  if (type === 'other') {
+    textarea.style.display = 'block';
+    textarea.value = '';
+    textarea.placeholder = 'Write freely. There are no correct answers here.';
+    hint.style.display = 'block';
+    hint.textContent = 'Take your time. The more specific, the more honest.';
+    nextBtn.classList.remove('ready');
+    checkOb1();
+  } else {
+    textarea.style.display = 'none';
+    textarea.value = '';
+    hint.style.display = 'none';
+    nextBtn.classList.add('ready');
+  }
+}
+
+function selectOtherDimension(btn, dimension) {
+  document.querySelectorAll('#other-dimension-fields .longing-opt, [onclick*="selectOtherDimension"]').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  state.otherDimension = dimension;
+
+  const fields = dimension === 'money' ? `
+    <div class="field-group">
+      <label>${t.ob_other_fund_label}</label>
+      <input class="dark-input" id="w-other-fund" type="number" placeholder="${t.ph_other_fund}" oninput="calcOtherFund(); checkOb2Ready();" min="0">
+    </div>` : `
+    <div class="field-group">
+      <label>${t.ob_other_time_label}</label>
+      <input class="dark-input" id="w-other-time" type="number" placeholder="${t.ph_other_years}" oninput="calcOtherTime(); checkOb2Ready();" min="0">
+    </div>
+    <div class="field-group">
+      <label>${t.ob_other_days_label}</label>
+      <input class="dark-input" id="w-other-days-year" type="number" placeholder="${t.ph_other_days_year}" oninput="calcOtherTime(); checkOb2Ready();" min="1" max="365">
+    </div>`;
+
+  document.getElementById('other-dimension-detail').innerHTML = fields;
+  document.getElementById('other-dimension-fields').style.display = 'block';
+  document.querySelectorAll('#other-dimension-detail input').forEach(input => {
+    input.addEventListener('input', checkOb2Ready);
+  });
+  checkOb2Ready();
+}
+
+function calcOtherFund() {
+  const fund = parseFloat(document.getElementById('w-other-fund')?.value);
+  if (!fund) return;
+  state.otherFund = fund;
+  document.getElementById('window-number').textContent = `£${fund.toLocaleString()}`;
+  document.getElementById('window-label').textContent = `That is what stands between you and it. Every purchase moves you closer or further away.`;
+  document.getElementById('window-result').classList.add('visible');
+}
+
+function calcOtherTime() {
+  const years = parseFloat(document.getElementById('w-other-time')?.value);
+  const daysPerYear = parseInt(document.getElementById('w-other-days-year')?.value);
+  if (!years || !daysPerYear) return;
+  const totalDays = Math.round(years * daysPerYear);
+  state.windowDays = totalDays;
+  document.getElementById('window-number').textContent = `${totalDays.toLocaleString()} days`;
+  document.getElementById('window-label').textContent = `At ${daysPerYear} days a year, you have approximately ${totalDays.toLocaleString()} days remaining for this. Not years. Days.`;
+  document.getElementById('window-result').classList.add('visible');
+}
+
+function calcEscapeFund() {
+  const fund = parseFloat(document.getElementById('w-escape-fund')?.value);
+  if (!fund) return;
+  state.escapeFund = fund;
+  document.getElementById('window-number').textContent = `£${fund.toLocaleString()}`;
+  document.getElementById('window-label').textContent =
+    `That is your number. Every purchase brings you closer to it, or further away.`;
+  document.getElementById('window-result').classList.add('visible');
+}
+
+function selectPartnerLiving(btn, liveTogether) {
+  document.querySelectorAll('#partner-living-fields .longing-opt, [onclick*="selectPartnerLiving"]').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  state.partnerLivesTogether = liveTogether;
+
+  const fields = liveTogether ? `
+    <div class="field-group">
+      <label>${t.field_partner_hours}</label>
+      <input class="dark-input" id="w-partner-hours" type="number" placeholder="${t.ph_partner_hours}" oninput="calcPartnerWindow()" min="0" max="24">
+    </div>` : `
+    <div class="field-group">
+      <label>${t.field_partner_days}</label>
+      <input class="dark-input" id="w-partner-days-week" type="number" placeholder="${t.ph_partner_days}" oninput="calcPartnerWindow()" min="0" max="7">
+    </div>`;
+
+  document.getElementById('partner-living-detail').innerHTML = fields;
+  document.getElementById('partner-living-fields').style.display = 'block';
+  document.querySelectorAll('#partner-living-detail input').forEach(input => {
+    input.addEventListener('input', checkOb2Ready);
+  });
+  checkOb2Ready();
+}
+
+function calcPartnerWindow() {
+  let totalHours = 0;
+  let label = '';
+  if (state.partnerLivesTogether) {
+    const hours = parseFloat(document.getElementById('w-partner-hours')?.value);
+    if (!hours) return;
+    totalHours = Math.round(hours * 365);
+    label = `At ${hours} hours a day, you have approximately ${totalHours.toLocaleString()} hours of genuine time together each year. Not the same room — together.`;
+  } else {
+    const daysPerWeek = parseFloat(document.getElementById('w-partner-days-week')?.value);
+    if (!daysPerWeek) return;
+    const daysPerYear = Math.round(daysPerWeek * 52);
+    totalHours = daysPerYear * 8;
+    label = `At ${daysPerWeek} days a week, you spend approximately ${daysPerYear} days together each year.`;
+    state.windowDays = daysPerYear;
+  }
+  state.windowDays = Math.round(totalHours / 24);
+  state.windowPerson = 'my partner';
+  document.getElementById('window-number').textContent = totalHours.toLocaleString() + ' hours';
+  document.getElementById('window-label').textContent = label;
+  document.getElementById('window-result').classList.add('visible');
+}
+
+function calcOtherWindow() {
+  const days = parseInt(document.getElementById('w-other-days')?.value);
+  if (!days) return;
+  const person = document.getElementById('w-person')?.value.trim() || 'them';
+  state.windowDays = days;
+  state.windowPerson = person;
+  document.getElementById('window-number').textContent = days.toLocaleString() + ' days / year';
+  document.getElementById('window-label').textContent = `You see ${person} ${days} days a year. That is ${(days / 365 * 100).toFixed(1)}% of your time.`;
+  document.getElementById('window-result').classList.add('visible');
+}
+
+function checkOb2Ready() {
+  const btn = document.getElementById('ob2-next');
+  if (!btn) return;
+  let ready = false;
+
+  if (selectedLongingType === 'person') {
+    if (!state.selectedRelation) { ready = false; }
+    else if (state.selectedRelation === 'parent') {
+      ready = !!(document.getElementById('w-age')?.value && document.getElementById('w-days')?.value);
+    } else if (state.selectedRelation === 'child') {
+      ready = !!(document.getElementById('w-age')?.value && document.getElementById('w-hours')?.value);
+    } else if (state.selectedRelation === 'partner') {
+      if (state.partnerLivesTogether === undefined) { ready = false; }
+      else if (state.partnerLivesTogether) {
+        ready = !!(document.getElementById('w-partner-hours')?.value);
+      } else {
+        ready = !!(document.getElementById('w-partner-days-week')?.value);
+      }
+    } else if (state.selectedRelation === 'other') {
+      ready = !!(document.getElementById('w-person')?.value.trim() && document.getElementById('w-other-days')?.value);
+    }
+  } else if (selectedLongingType === 'freedom') {
+    const last = document.getElementById('w-last')?.value.trim();
+    const fund = document.getElementById('w-escape-fund')?.value;
+    ready = !!(last && fund);
+  } else if (selectedLongingType === 'work') {
+    const work = document.getElementById('w-work')?.value.trim();
+    const hours = document.getElementById('w-work-hours')?.value;
+    ready = !!(work && hours);
+  } else if (selectedLongingType === 'other') {
+    const limit = document.getElementById('w-limit')?.value.trim();
+    if (!limit || !state.otherDimension) { ready = false; }
+    else if (state.otherDimension === 'money') {
+      ready = !!(document.getElementById('w-other-fund')?.value);
+    } else if (state.otherDimension === 'time') {
+      ready = !!(document.getElementById('w-other-time')?.value && document.getElementById('w-other-days-year')?.value);
+    }
+  }
+
+  if (ready) btn.classList.add('ready');
+  else btn.classList.remove('ready');
+}
+
+function selectRelation(btn, relation) {
+  document.querySelectorAll('#relation-options .longing-opt').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  state.selectedRelation = relation;
+  state.partnerLivesTogether = undefined;
+  document.getElementById('window-result').classList.remove('visible');
+
+  const detailFields = {
+    parent: `
+      <div class="field-group">
+        <label>${t.field_their_age}</label>
+        <input class="dark-input" id="w-age" type="number" placeholder="${t.ph_age_parent}" oninput="calcWindow()" min="1" max="120">
+      </div>
+      <div class="field-group">
+        <label>${t.field_days_together}</label>
+        <input class="dark-input" id="w-days" type="number" placeholder="${t.ph_days_together}" oninput="calcWindow()" min="1" max="365">
+      </div>`,
+    child: `
+      <div class="field-group">
+        <label>${t.field_child_age}</label>
+        <input class="dark-input" id="w-age" type="number" placeholder="${t.ph_child_age}" oninput="calcChildWindow()" min="0" max="25">
+      </div>
+      <div class="field-group">
+        <label>${t.field_child_hours}</label>
+        <input class="dark-input" id="w-hours" type="number" placeholder="${t.ph_child_hours}" oninput="calcChildWindow()" min="0" max="24">
+      </div>`,
+    partner: `
+      <div class="field-group">
+        <label>${t.field_live_together}</label>
+        <div style="display:flex; gap:10px; margin-top:10px;">
+          <button class="longing-opt" style="flex:1;" onclick="selectPartnerLiving(this, true)">Yes</button>
+          <button class="longing-opt" style="flex:1;" onclick="selectPartnerLiving(this, false)">No</button>
+        </div>
+      </div>
+      <div id="partner-living-fields" style="display:none; margin-top:20px;">
+        <div class="window-fields" id="partner-living-detail"></div>
+      </div>`,
+    other: `
+      <div class="field-group">
+        <label>${t.field_other_who}</label>
+        <input class="dark-input" id="w-person" placeholder="${t.ph_other_who}" oninput="checkOb2Ready()">
+      </div>
+      <div class="field-group">
+        <label>${t.field_other_days}</label>
+        <input class="dark-input" id="w-other-days" type="number" placeholder="${t.ph_other_days}" oninput="calcOtherWindow()" min="1" max="365">
+      </div>`,
+  };
+
+  document.getElementById('relation-detail').innerHTML = detailFields[relation] || '';
+  document.getElementById('relation-fields').style.display = 'block';
+  // Add oninput listeners to all newly rendered inputs
+  document.querySelectorAll('#relation-detail input').forEach(input => {
+    input.addEventListener('input', checkOb2Ready);
+  });
+  checkOb2Ready();
+  document.getElementById('window-result').classList.remove('visible');
+  state.windowPerson = relation;
+}
+
+function calcChildWindow() {
+  const age = parseInt(document.getElementById('w-age')?.value);
+  const hours = parseFloat(document.getElementById('w-hours')?.value);
+  if (!age || !hours) return;
+  const yearsLeft = Math.max(0, 18 - age);
+  const totalHours = Math.round(yearsLeft * 365 * hours);
+  document.getElementById('window-number').textContent = totalHours.toLocaleString() + ' hours';
+  document.getElementById('window-label').textContent =
+    `At ${hours} hours a day, you have approximately ${totalHours.toLocaleString()} hours left before they leave home. Not years. Hours.`;
+  document.getElementById('window-result').classList.add('visible');
+  state.windowDays = Math.round(totalHours / 24);
+  state.windowPerson = 'my child';
+}
+
+function goToOb2() {
+  if (!selectedLongingType) { showToast(t.toast_choose); return; }
+  if (selectedLongingType === 'other' && !document.getElementById('ob1-answer').value.trim()) {
+    showToast(t.toast_write);
+    return;
+  }
+  const labels = {
+    person: t.ob1_opt_person,
+    freedom: t.ob1_opt_freedom,
+    work: t.ob1_opt_work,
+  };
+  state.longing = selectedLongingType === 'other'
+    ? document.getElementById('ob1-answer').value.trim()
+    : labels[selectedLongingType];
+
+  // Save numeric values for conversion
+  if (selectedLongingType === 'freedom') {
+    state.escapeFund = parseFloat(document.getElementById('w-escape-fund')?.value) || 0;
+  } else if (selectedLongingType === 'work') {
+    state.workHoursPerWeek = parseFloat(document.getElementById('w-work-hours')?.value) || 0;
+  } else if (selectedLongingType === 'other') {
+    if (state.otherDimension === 'money') {
+      state.otherFund = parseFloat(document.getElementById('w-other-fund')?.value) || 0;
+    }
+  }
+
+  // Render dynamic ob2 fields
+  const configs = {
+    person: {
+      title: t.ob2_title_person,
+      sub: t.ob2_sub_person,
+      fields: `
+        <div class="field-group">
+          <label>${t.field_other_who}</label>
+          <div class="relation-options" id="relation-options" style="display:flex; flex-direction:column; gap:10px; margin-top:12px;">
+            <button class="longing-opt" onclick="selectRelation(this, 'parent')" data-relation="parent">${t.ob2_rel_parent}</button>
+            <button class="longing-opt" onclick="selectRelation(this, 'child')" data-relation="child">${t.ob2_rel_child}</button>
+            <button class="longing-opt" onclick="selectRelation(this, 'partner')" data-relation="partner">${t.ob2_rel_partner}</button>
+            <button class="longing-opt" onclick="selectRelation(this, 'other')" data-relation="other">${t.ob2_rel_other}</button>
+          </div>
+        </div>
+        <div id="relation-fields" style="display:none;">
+          <div class="window-fields" id="relation-detail"></div>
+        </div>`
+    },
+    freedom: {
+      title: t.ob2_title_freedom,
+      sub: t.ob2_sub_freedom,
+      fields: `
+        <div class="field-group">
+          <label>${t.field_freedom_last}</label>
+          <input class="dark-input" id="w-last" placeholder="${t.ph_freedom_last}" oninput="checkOb2Ready()">
+        </div>
+        <div class="field-group">
+          <label>${t.field_escape_fund}</label>
+          <input class="dark-input" id="w-escape-fund" type="number" placeholder="${t.ph_escape_fund}" oninput="calcEscapeFund(); checkOb2Ready();" min="0">
+        </div>
+        <div class="field-group">
+          <label>${t.field_freedom_block}</label>
+          <input class="dark-input" id="w-block" placeholder="${t.ph_freedom_block}">
+        </div>`
+    },
+    work: {
+      title: t.ob2_title_work,
+      sub: t.ob2_sub_work,
+      fields: `
+        <div class="field-group">
+          <label>${t.field_work_what}</label>
+          <input class="dark-input" id="w-work" placeholder="${t.ph_work_what}" oninput="checkOb2Ready()">
+        </div>
+        <div class="field-group">
+          <label>${t.field_work_hours}</label>
+          <input class="dark-input" id="w-work-hours" type="number" placeholder="${t.ph_work_hours}" oninput="checkOb2Ready()" min="1" max="80">
+        </div>
+        <div class="field-group">
+          <label>${t.field_work_last}</label>
+          <input class="dark-input" id="w-last" placeholder="${t.ph_work_last}">
+        </div>`
+    },
+    other: {
+      title: 'Some things have a closing time.',
+      sub: 'Yours may be different from anyone else\'s. That does not make it less real.',
+      fields: `
+        <div class="field-group">
+          <label>${t.field_limit}</label>
+          <input class="dark-input" id="w-limit" placeholder="${t.ph_limit}" oninput="checkOb2Ready()">
+        </div>
+        <div class="field-group" style="margin-top:20px;">
+          <label>${t.field_dimension_q}</label>
+          <div style="display:flex; gap:10px; margin-top:12px;">
+            <button class="longing-opt" style="flex:1;" onclick="selectOtherDimension(this, 'money')">Money</button>
+            <button class="longing-opt" style="flex:1;" onclick="selectOtherDimension(this, 'time')">Time</button>
+          </div>
+        </div>
+        <div id="other-dimension-fields" style="display:none; margin-top:20px;">
+          <div class="window-fields" id="other-dimension-detail"></div>
+        </div>`
+    },
+  };
+
+  const cfg = configs[selectedLongingType];
+  document.getElementById('ob2-title').textContent = cfg.title;
+  document.getElementById('ob2-sub').textContent = cfg.sub;
+  document.getElementById('ob2-fields').innerHTML = cfg.fields;
+  document.getElementById('window-result').classList.remove('visible');
+  document.getElementById('window-number').textContent = '—';
+  document.getElementById('window-label').textContent = '—';
+
+  goTo('screen-ob2');
+  checkOb2Ready();
+}
+
+function goToOb3() {
+  if (selectedLongingType === 'person') {
+    if (!state.selectedRelation) { showToast(t.toast_who); return; }
+    if (state.selectedRelation === 'parent') {
+      const age = document.getElementById('w-age')?.value;
+      const days = document.getElementById('w-days')?.value;
+      if (!age) { showToast(t.toast_age); return; }
+      if (!days) { showToast(t.toast_days_together); return; }
+    } else if (state.selectedRelation === 'child') {
+      const age = document.getElementById('w-age')?.value;
+      const hours = document.getElementById('w-hours')?.value;
+      if (!age) { showToast(t.toast_age); return; }
+      if (!hours) { showToast(t.toast_child_hours); return; }
+    } else if (state.selectedRelation === 'partner') {
+      if (state.partnerLivesTogether === undefined) { showToast(t.toast_live_together); return; }
+      if (state.partnerLivesTogether && !document.getElementById('w-partner-hours')?.value) {
+        showToast(t.toast_partner_hours); return;
+      }
+      if (!state.partnerLivesTogether && !document.getElementById('w-partner-days-week')?.value) {
+        showToast(t.toast_partner_days); return;
+      }
+    } else if (state.selectedRelation === 'other') {
+      const person = document.getElementById('w-person')?.value.trim();
+      const days = document.getElementById('w-other-days')?.value;
+      if (!person) { showToast(t.toast_other_person); return; }
+      if (!days) { showToast(t.toast_other_days); return; }
+    }
+  } else if (selectedLongingType === 'freedom') {
+    const last = document.getElementById('w-last')?.value.trim();
+    const fund = document.getElementById('w-escape-fund')?.value;
+    if (!last) { showToast(t.toast_freedom_last); return; }
+    if (!fund) { showToast(t.toast_escape_fund); return; }
+  } else if (selectedLongingType === 'work') {
+    const work = document.getElementById('w-work')?.value.trim();
+    const hours = document.getElementById('w-work-hours')?.value;
+    if (!work) { showToast(t.toast_work_what); return; }
+    if (!hours) { showToast(t.toast_work_hours); return; }
+  } else if (selectedLongingType === 'other') {
+    const limit = document.getElementById('w-limit')?.value.trim();
+    if (!limit) { showToast(isZh ? '是什麼讓你無法實現？誠實說。' : 'What is limiting this — be honest.'); return; }
+    if (!state.otherDimension) { showToast(t.toast_dimension); return; }
+    if (state.otherDimension === 'money' && !document.getElementById('w-other-fund')?.value) {
+      showToast(t.toast_other_fund); return;
+    }
+    if (state.otherDimension === 'time') {
+      if (!document.getElementById('w-other-time')?.value) { showToast(isZh ? '你覺得你還有幾年？' : 'How many years do you think you still have?'); return; }
+      if (!document.getElementById('w-other-days-year')?.value) { showToast(isZh ? '每年可以投入幾天？' : 'And how many days per year could you dedicate to it?'); return; }
+    }
+  }
+  goTo('screen-ob3');
+}
+
+async function goToApp() {
+  state.lifePercent = parseInt(document.getElementById('life-slider').value);
+  await saveOnboarding();
+  populateApp();
+  goTo('screen-app');
+  checkFollowup();
+}
+
+// ── ONBOARDING ──
+function calcWindow() {
+  // Dynamic form uses w-age and w-days IDs
+  const age = parseInt(document.getElementById('w-age')?.value);
+  const daysPerYear = parseInt(document.getElementById('w-days')?.value);
+
+  if (!age || !daysPerYear) {
+    document.getElementById('window-result').classList.remove('visible');
+    return;
+  }
+
+  const lifeExpectancy = 82;
+  const yearsLeft = Math.max(0, lifeExpectancy - age);
+  const totalDays = Math.round(yearsLeft * daysPerYear);
+
+  state.windowDays = totalDays;
+  state.windowAge = age;
+  state.windowPerson = state.selectedRelation || 'them';
+
+  document.getElementById('window-number').textContent = totalDays.toLocaleString() + ' days';
+  document.getElementById('window-label').textContent =
+    `You have approximately ${totalDays.toLocaleString()} days remaining. Not years. Days.`;
+  document.getElementById('window-result').classList.add('visible');
+}
+
+function updateSlider(val) {
+  document.getElementById('slider-val').textContent = val + '%';
+  const notes = {
+    0: t.slider_0, 10: t.slider_10, 20: t.slider_20,
+    30: t.slider_30, 40: t.slider_40, 50: t.slider_50,
+    60: t.slider_60, 70: t.slider_70, 80: t.slider_80,
+    90: t.slider_90, 100: t.slider_100,
+  };
+  const rounded = Math.round(val / 10) * 10;
+  document.getElementById('slider-note').textContent = notes[rounded] || '';
+  const slider = document.getElementById('life-slider');
+  slider.style.background = `linear-gradient(to right, var(--accent) 0%, var(--accent) ${val}%, var(--border) ${val}%, var(--border) 100%)`;
+}
+
+// ── APP ──
+function populateApp() {
+  // Show FAB when app is ready
+  const fab = document.getElementById('fab-record');
+  if (fab) fab.style.display = 'block';
+
+  // Update account section
+  const accountSection = document.getElementById('account-section');
+  const accountPrompt = document.getElementById('account-prompt');
+  const accountBtn = document.getElementById('account-btn');
+  if (!db) {
+    // Supabase not available — hide account section
+    if (accountSection) accountSection.style.display = 'none';
+  } else if (currentUser) {
+    if (accountSection) accountSection.style.display = 'block';
+    accountPrompt.textContent = `Signed in as ${currentUser.email}`;
+    accountBtn.textContent = 'Sign out →';
+    accountBtn.onclick = handleSignOut;
+  } else {
+    if (accountSection) accountSection.style.display = 'block';
+    accountPrompt.textContent = 'Your records exist only on this device.';
+    accountBtn.textContent = 'Create an account to keep them →';
+    accountBtn.onclick = () => openAuthModal();
+  }
+  document.getElementById('app-longing').textContent = state.longing || '—';
+  // Update north star label
+  const nsLabelEl = document.querySelector('.north-star-label');
+  if (nsLabelEl) nsLabelEl.textContent = t.north_star_label;
+
+  // Personalised welcome on first visit
+  const isFirstVisit = state.expenses.length === 0;
+  const welcome = document.getElementById('app-welcome');
+  if (isFirstVisit && state.longing) {
+    const welcomeMessages = {
+      person: t.welcome_person,
+      freedom: t.welcome_freedom,
+      work: t.welcome_work,
+      other: isZh ? `你說過，你最不想錯過的是「${state.longing}」。從這裡開始，看看你的消費是否反映了這件事。` : `You said what you most dread missing is "${state.longing}". This is where you begin to find out if your spending reflects that.`,
+    };
+    welcome.textContent = welcomeMessages[selectedLongingType] || welcomeMessages.other;
+    welcome.style.display = 'block';
+  } else {
+    welcome.style.display = 'none';
+  }
+
+  // Window bar
+  document.getElementById('app-window-days').textContent = state.windowDays
+    ? state.windowDays.toLocaleString()
+    : state.escapeFund > 0 ? `£${state.escapeFund.toLocaleString()}` : '—';
+
+  document.getElementById('app-window-label').innerHTML = state.escapeFund > 0 && selectedLongingType === 'freedom'
+    ? (isZh ? '距離逃脫基金' : 'your escape fund')
+    : state.windowPerson
+      ? (isZh ? `與${state.windowPerson}剩餘的時間` : `days remaining<br>with ${state.windowPerson}`)
+      : (isZh ? '你的時間窗口' : 'days remaining<br>in your window');
+
+  document.getElementById('annual-longing').textContent = state.longing || '—';
+  document.getElementById('annual-slider-was').textContent = state.lifePercent + '%';
+  document.getElementById('annual-window').textContent = state.windowDays ? state.windowDays.toLocaleString() : '—';
+
+  // Init annual slider fill
+  const annualSlider = document.getElementById('annual-slider');
+  if (annualSlider) {
+    if (annualSlider) annualSlider.style.background = `linear-gradient(to right, var(--accent) 0%, var(--accent) 40%, var(--border) 40%, var(--border) 100%)`;
+  }
+
+  // Pick monthly question — rotate through pool without repeating
+  const monthIndex = (new Date().getFullYear() * 12 + new Date().getMonth()) % monthlyQuestions.length;
+  const questions = isZh ? monthlyQuestionsZh : monthlyQuestions;
+  document.getElementById('monthly-q').textContent = questions[monthIndex];
+
+  updateStats();
+  renderExpenses();
+  renderWeekly();
+  renderAnnual();
+}
+
+function openBeginAgain() {
+  document.getElementById('begin-again-modal').classList.add('open');
+}
+
+function confirmBeginAgain(genuine) {
+  document.getElementById('begin-again-modal').classList.remove('open');
+
+  if (!genuine) {
+    showToast(t.toast_numbers_wait);
+    return;
+  }
+
+  // Clear all state and localStorage, restart onboarding
+  localStorage.removeItem('whilst_exp');
+  localStorage.removeItem('whilst_weekly');
+  localStorage.removeItem('whilst_monthly');
+  localStorage.removeItem('whilst_followup');
+  localStorage.removeItem('whilst_salary');
+
+  // Reset state
+  state.longing = '';
+  state.windowDays = 0;
+  state.windowPerson = '';
+  state.escapeFund = 0;
+  state.workHoursPerWeek = 0;
+  state.expenses = [];
+  state.weeklyAnswers = [];
+  state.monthlyAnswers = [];
+  state.followupQueue = [];
+  state.lifePercent = 40;
+  state.selectedRelation = '';
+  state.partnerLivesTogether = undefined;
+  state.otherDimension = '';
+  state.otherFund = 0;
+  state.salarySet = false;
+
+  selectedLongingType = '';
+
+  // Reset ob1
+  document.querySelectorAll('.longing-opt').forEach(b => b.classList.remove('selected'));
+  document.getElementById('ob1-answer').value = '';
+  document.getElementById('ob1-answer').style.display = 'none';
+  document.getElementById('ob1-hint').style.display = 'none';
+  document.getElementById('ob1-next').classList.remove('ready');
+
+  // Hide FAB
+  const fab = document.getElementById('fab-record');
+  if (fab) fab.style.display = 'none';
+
+  goTo('screen-splash');
+  showToast(t.toast_begin_honest);
+}
+
+async function deleteExpense(id) {
+  // Remove from state
+  state.expenses = state.expenses.filter(e => String(e.id) !== String(id));
+  localStorage.setItem('whilst_exp', JSON.stringify(state.expenses));
+
+  // Remove from Supabase if signed in
+  if (db && currentUser) {
+    await db.from('expenses').delete().eq('id', id).eq('user_id', currentUser.id);
+  }
+
+  updateStats();
+  renderExpenses();
+  renderAnnual();
+  showToast(t.toast_removed);
+}
+
+function openRecordModal() {
+  document.getElementById('record-modal').classList.add('open');
+  document.getElementById('exp-name').focus();
+}
+
+function closeRecordModal() {
+  document.getElementById('record-modal').classList.remove('open');
+  document.getElementById('exp-name').value = '';
+  document.getElementById('exp-amount').value = '';
+  document.querySelectorAll('.motive-btn').forEach(b => b.classList.remove('selected'));
+  state.selectedMotive = '';
+}
+
+function showTab(tabId, btn) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+  btn.classList.add('active');
+  // Show FAB only on Now tab
+  const fab = document.getElementById('fab-record');
+  if (fab) fab.style.display = tabId === 'tab-today' ? 'block' : 'none';
+}
+
+function selectMotive(btn) {
+  document.querySelectorAll('.motive-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  state.selectedMotive = btn.dataset.m;
+}
+
+async function addExpense() {
+  const name = document.getElementById('exp-name').value.trim();
+  const amount = parseFloat(document.getElementById('exp-amount').value);
+
+  if (!name || !amount || amount <= 0) {
+    showToast(t.toast_name_amount);
+    return;
+  }
+  if (!state.selectedMotive) {
+    showToast(t.toast_why);
+    return;
+  }
+
+  // First time recording — ask for salary
+  if (!state.salarySet && state.expenses.length === 0) {
+    state._pendingExpense = { name, amount, motive: state.selectedMotive };
+    document.getElementById('salary-modal').classList.add('open');
+    return;
+  }
+
+  await commitExpense(name, amount, state.selectedMotive);
+}
+
+async function saveSalary() {
+  const monthly = parseFloat(document.getElementById('monthly-salary')?.value);
+  if (monthly && monthly > 0) {
+    state.hourlyRate = monthly / 30 / 8;
+    state.salarySet = true;
+    localStorage.setItem('whilst_salary', String(monthly));
+  } else {
+    state.salarySet = true;
+  }
+  document.getElementById('salary-modal').classList.remove('open');
+  if (state._pendingExpense) {
+    const { name, amount, motive } = state._pendingExpense;
+    state._pendingExpense = null;
+    await commitExpense(name, amount, motive);
+  }
+}
+
+async function skipSalary() {
+  state.salarySet = true;
+  document.getElementById('salary-modal').classList.remove('open');
+  if (state._pendingExpense) {
+    const { name, amount, motive } = state._pendingExpense;
+    state._pendingExpense = null;
+    await commitExpense(name, amount, motive);
+  }
+}
+
+async function commitExpense(name, amount, motive) {
+  const isEscaping = ['I was bored', 'I was unhappy', 'A treat to myself'].includes(motive);
+  const isFirst = state.expenses.length === 0;
+
+  const exp = {
+    id: Date.now(),
+    name, amount,
+    motive,
+    isEscaping,
+    date: new Date().toISOString().split('T')[0], // ISO for storage
+    dateDisplay: formatDate(),
+    time: new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
+    forgotten: null,
+    month: new Date().getMonth(),
+    year: new Date().getFullYear(),
+  };
+
+  state.expenses.unshift(exp);
+
+  if (isEscaping) {
+    // followupQueue uses local timestamp id — Supabase expense id is UUID, stored separately
+    const localId = typeof exp.id === 'number' ? exp.id : Date.now();
+    state.followupQueue.push({ id: localId, dueDate: Date.now() + (7 * 24 * 60 * 60 * 1000), name: exp.name, amount: exp.amount });
+    localStorage.setItem('whilst_followup', JSON.stringify(state.followupQueue));
+  }
+
+  localStorage.setItem('whilst_exp', JSON.stringify(state.expenses));
+
+  // Sync to Supabase if signed in
+  await saveExpenseToDb(exp);
+
+  document.getElementById('exp-name').value = '';
+  document.getElementById('exp-amount').value = '';
+  document.querySelectorAll('.motive-btn').forEach(b => b.classList.remove('selected'));
+  state.selectedMotive = '';
+
+  closeRecordModal();
+  updateStats();
+  renderExpenses();
+  renderAnnual();
+  showToast(getRecordedToast(name, amount, motive, isEscaping));
+
+  // Prompt sign up after first expense if not signed in
+  if (isFirst && !currentUser) {
+    setTimeout(() => {
+      openAuthModal('Would you like to save your records across devices?');
+    }, 2000);
+  }
+}
+
+function getRecordedToast(name, amount, motive, isEscaping) {
+  const toasts = [
+    `£${amount} for "${name}." Recorded, without judgement.`,
+    `"${name}" has been added to the record. ${isEscaping ? 'We\'ll check in with you in seven days.' : ''}`,
+    `Another entry. The ledger grows.`,
+    `Duly noted.`,
+  ];
+  return toasts[Math.floor(Math.random() * toasts.length)];
+}
+
+function updateStats() {
+  const now = new Date();
+  const thisMonth = state.expenses.filter(e => e.month === now.getMonth() && e.year === now.getFullYear());
+  const isEmpty = thisMonth.length === 0;
+
+  const total = thisMonth.reduce((s, e) => s + e.amount, 0);
+  const hours = (total / state.hourlyRate).toFixed(1);
+  const escapingCount = thisMonth.filter(e => e.isEscaping).length;
+  const escapingPct = thisMonth.length > 0 ? Math.round((escapingCount / thisMonth.length) * 100) : 0;
+  const forgottenCount = thisMonth.filter(e => e.forgotten === false).length;
+  const forgottenTotal = thisMonth.filter(e => e.forgotten !== null).length;
+  const forgottenPct = forgottenTotal > 0 ? Math.round((forgottenCount / forgottenTotal) * 100) : 0;
+
+  if (isEmpty) {
+    document.getElementById('stat-total').textContent = '—';
+    document.getElementById('stat-total-label').innerHTML = isZh ? '本月尚無記錄' : 'nothing recorded<br>yet this month';
+    document.getElementById('stat-hours').textContent = '—';
+    document.getElementById('stat-impulse').textContent = '—';
+    document.getElementById('stat-forgotten').textContent = '—';
+  } else {
+    document.getElementById('stat-total').textContent = `£${total.toLocaleString()}`;
+    document.getElementById('stat-total-label').innerHTML = 'spent<br>this month';
+    document.getElementById('stat-hours').textContent = `${hours}h`;
+    document.getElementById('stat-impulse').textContent = `${escapingPct}%`;
+    document.getElementById('stat-forgotten').textContent = `${forgottenPct}%`;
+
+    // Distress message when numbers are particularly difficult
+    const distressEl = document.getElementById('distress-note');
+    if (escapingPct >= 60 || forgottenPct >= 70) {
+      if (distressEl) {
+        distressEl.textContent = t.distress;
+        distressEl.style.display = 'block';
+      }
+    } else {
+      if (distressEl) distressEl.style.display = 'none';
+    }
+  }
+}
+
+function renderExpenses() {
+  const list = document.getElementById('expense-list');
+  const now = new Date();
+  const thisMonth = state.expenses.filter(e => e.month === now.getMonth() && e.year === now.getFullYear());
+
+  if (thisMonth.length === 0) {
+    list.innerHTML = `<div class="empty-state" id="empty-state-text">${isZh ? '尚無記錄。<br>這要麼值得讚賞，要麼值得懷疑。' : 'Nothing recorded yet.<br>Which is either admirable or dishonest.'}</div>`;
+    return;
+  }
+
+  const totalSpent = thisMonth.reduce((s, e) => s + e.amount, 0);
+
+  list.innerHTML = thisMonth.slice(0, 15).map(e => {
+    const hoursWorked = (e.amount / state.hourlyRate).toFixed(1);
+    const isWarning = ['I was bored', 'I was unhappy', 'A treat to myself', "I don't know"].includes(e.motive);
+
+    let conversion = `${hoursWorked} hours of your life exchanged`;
+    if (selectedLongingType === 'person' && state.windowDays > 0) {
+      const pct = ((e.amount / (state.windowDays * 3)) * 100).toFixed(1);
+      conversion += ` · moved you ${pct}% further from what matters`;
+    } else if (selectedLongingType === 'freedom') {
+      if ((state.escapeFund || 0) > 0) {
+        const pct = ((e.amount / state.escapeFund) * 100).toFixed(1);
+        conversion += ` · ${pct}% of your escape fund`;
+      } else {
+        conversion += ` · hours keeping you here`;
+      }
+    } else if (selectedLongingType === 'work') {
+      if (state.workHoursPerWeek > 0) {
+        const hrs = (e.amount / state.hourlyRate).toFixed(1);
+        conversion += ` · ${hrs} hours you could have spent on what you love`;
+      } else {
+        conversion += ` · time spent not doing what you love`;
+      }
+    } else if (selectedLongingType === 'other') {
+      if (state.otherDimension === 'money' && (state.otherFund || 0) > 0) {
+        const pct = ((e.amount / state.otherFund) * 100).toFixed(1);
+        conversion += ` · ${pct}% of what stands between you and it`;
+      } else if (state.otherDimension === 'time' && state.windowDays > 0) {
+        const pct = ((e.amount / (state.windowDays * 3)) * 100).toFixed(1);
+        conversion += ` · moved you ${pct}% further from what matters`;
+      }
+    }
+
+    return `
+      <div class="expense-item" id="exp-${e.id}">
+        <div class="expense-top">
+          <div class="expense-name">${e.name}</div>
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div class="expense-amount">£${e.amount.toLocaleString()}</div>
+            <button class="expense-delete" onclick="deleteExpense('${e.id}')" title="Delete">×</button>
+          </div>
+        </div>
+        <div class="expense-conversion">${conversion}</div>
+        <div>
+          <span class="expense-motive-tag ${isWarning ? 'warning' : ''}">${e.motive}</span>
+          ${e.forgotten === false ? '<span class="expense-motive-tag" style="margin-left:4px; color:var(--dim)">Already forgotten</span>' : ''}
+          ${e.forgotten === true ? '<span class="expense-motive-tag" style="margin-left:4px; color:rgba(100,180,100,0.6); border-color:rgba(100,180,100,0.2)">Still valued</span>' : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderWeekly() {
+  const now = new Date();
+  const thisMonth = state.expenses.filter(e => e.month === now.getMonth() && e.year === now.getFullYear());
+  const total = thisMonth.reduce((s, e) => s + e.amount, 0);
+  const escapingAmt = thisMonth.filter(e => e.isEscaping).reduce((s, e) => s + e.amount, 0);
+  const escapingPct = total > 0 ? Math.round((escapingAmt / total) * 100) : 0;
+
+  const narrative = total > 0
+    ? isZh
+      ? `${state.longing ? `你說過，你最不想錯過的是 <em>「${state.longing}」</em>。` : ''}這個月，你花了 <strong>£${total.toLocaleString()}</strong>。其中 <strong>£${escapingAmt.toLocaleString()}（${escapingPct}%）</strong>是在試圖讓自己感覺好一點的時候花掉的。錢已經沒了。至於感覺有沒有好一點，又是另一回事了。`
+      : `${state.longing ? `You said the one thing you most dread missing is <em>${state.longing}</em>. ` : ''}This month, you have spent <strong>£${total.toLocaleString()}</strong>. Of that, <strong>£${escapingAmt.toLocaleString()} (${escapingPct}%)</strong> was spent whilst trying to feel better about something. The money has gone. Whether the feeling improved is another matter entirely.`
+    : isZh ? '本月尚無記錄，先誠實地記下一筆吧。' : 'Nothing recorded yet this month. Either you have spent nothing, or you have not been paying attention. Both are worth knowing. Begin by recording something honest.';
+
+  document.getElementById('weekly-narrative').innerHTML = narrative;
+}
+
+function renderAnnual() {
+  const now = new Date();
+  const thisYear = state.expenses.filter(e => e.year === now.getFullYear());
+  const total = thisYear.reduce((s, e) => s + e.amount, 0);
+  const escapingAmt = thisYear.filter(e => e.isEscaping).reduce((s, e) => s + e.amount, 0);
+  const escapingPct = total > 0 ? Math.round((escapingAmt / total) * 100) : 0;
+  const forgottenCount = thisYear.filter(e => e.forgotten === false).length;
+  const forgottenTotal = thisYear.filter(e => e.forgotten !== null).length;
+  const forgottenPct = forgottenTotal > 0 ? Math.round((forgottenCount / forgottenTotal) * 100) : 0;
+  const hours = (total / state.hourlyRate).toFixed(0);
+
+  document.getElementById('annual-data').innerHTML = total > 0
+    ? isZh
+      ? `你今年花了 <strong>£${total.toLocaleString()}</strong>，相當於你 <strong>${hours} 個小時</strong>的人生。<br><br>
+         其中 <strong>${escapingPct}%</strong> 是在逃避什麼的時候花掉的。<br><br>
+         在你重新檢視過的消費裡，<strong>${forgottenPct}%</strong> 是你已經忘記的。<br><br>
+         ${state.longing ? `你說過你最不想錯過的是：<em>「${state.longing}」</em>。而上面的數字，是你實際選擇的。` : ''}`
+      : `You have spent <strong>£${total.toLocaleString()}</strong> this year — the equivalent of <strong>${hours} hours</strong> of your life.<br><br>
+         <strong>${escapingPct}%</strong> of it was spent whilst escaping something.<br><br>
+         Of the purchases you've revisited, <strong>${forgottenPct}%</strong> were ones you'd already forgotten.<br><br>
+         ${state.longing ? `The thing you said you most dreaded missing was: <em>"${state.longing}"</em>. The numbers above are what you chose instead.` : ''}`
+    : isZh ? '尚無記錄，先記下一筆誠實的消費。' : 'Nothing recorded yet. Begin with one honest entry.';
+}
+
+function updateAnnualSlider(val) {
+  document.getElementById('annual-slider-val').textContent = val + '%';
+  const was = state.lifePercent;
+  const diff = val - was;
+  let note = '';
+  if (diff > 10) note = t.annual_slider_up;
+  else if (diff > 0) note = t.annual_slider_up;
+  else if (diff === 0) note = t.annual_slider_same;
+  else if (diff > -10) note = t.annual_slider_down;
+  else note = t.annual_slider_down;
+  document.getElementById('annual-slider-note').textContent = note;
+
+  const slider = document.getElementById('annual-slider');
+  slider.style.background = `linear-gradient(to right, var(--accent) 0%, var(--accent) ${val}%, var(--border) ${val}%, var(--border) 100%)`;
+}
+
+// ── FOLLOWUP ──
+function checkFollowup() {
+  const now = Date.now();
+  const due = state.followupQueue.find(f => f.dueDate <= now && f.answered !== true);
+  if (due) {
+    document.getElementById('followup-item').textContent = `"${due.name}" — £${due.amount}`;
+    document.getElementById('followup-modal').classList.add('open');
+    window._currentFollowup = due;
+  }
+}
+
+function answerFollowup(remembered) {
+  document.getElementById('followup-modal').classList.remove('open');
+  if (window._currentFollowup) {
+    const exp = state.expenses.find(e => e.id === window._currentFollowup.id);
+    if (exp) {
+      exp.forgotten = !remembered;
+      localStorage.setItem('whilst_exp', JSON.stringify(state.expenses));
+    }
+    state.followupQueue = state.followupQueue.map(f =>
+      f.id === window._currentFollowup.id ? { ...f, answered: true } : f
+    );
+    localStorage.setItem('whilst_followup', JSON.stringify(state.followupQueue));
+    updateStats();
+    renderExpenses();
+    renderAnnual();
+
+    if (!remembered) {
+      showToast(t.toast_forgotten);
+    } else {
+      showToast(t.toast_worth_it);
+    }
+  }
+}
+
+// ── WEEKLY / MONTHLY SAVE ──
+async function saveWeekly() {
+  const answer = document.getElementById('weekly-answer').value.trim();
+  if (!answer) { showToast(t.toast_write); return; }
+  state.weeklyAnswers.push({ date: formatDate(), answer });
+  localStorage.setItem('whilst_weekly', JSON.stringify(state.weeklyAnswers));
+  await saveWeeklyToDb(answer);
+  document.getElementById('weekly-answer').value = '';
+  showToast(t.toast_saved);
+}
+
+async function saveMonthly() {
+  const answer = document.getElementById('monthly-answer').value.trim();
+  if (!answer) { showToast(t.toast_sit); return; }
+  const question = document.getElementById('monthly-q').textContent;
+  state.monthlyAnswers.push({ date: formatDate(), answer, question });
+  localStorage.setItem('whilst_monthly', JSON.stringify(state.monthlyAnswers));
+  await saveMonthlyToDb(question, answer);
+  document.getElementById('monthly-answer').value = '';
+  showToast(t.toast_noted);
+}
+
+// ── TOAST ──
+function showToast(msg) {
+  const toastEl = document.getElementById('toast');
+  if (!toastEl) return;
+  toastEl.textContent = msg;
+  toastEl.classList.add('show');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => toastEl.classList.remove('show'), 4500);
+}
+
+// ── KEYBOARD HANDLING ──
+if (window.visualViewport) {
+  window.visualViewport.addEventListener('resize', () => {
+    const keyboardHeight = Math.max(0, window.innerHeight - window.visualViewport.height);
+    // Push onboard-wrap content up when keyboard appears
+    document.querySelectorAll('.onboard-wrap').forEach(el => {
+      el.style.paddingBottom = keyboardHeight > 0 ? `${keyboardHeight + 120}px` : '120px';
+    });
+    // Move fixed nav above keyboard
+    document.querySelectorAll('.onboard-nav').forEach(el => {
+      el.style.bottom = keyboardHeight > 0 ? `${keyboardHeight}px` : '0';
+    });
+  });
+}
+
+// ── INIT ──
+applyTranslations();
+updateSlider(40);
+const initSlider = document.getElementById('life-slider');
+if (initSlider) initSlider.style.background = `linear-gradient(to right, var(--accent) 0%, var(--accent) 40%, var(--border) 40%, var(--border) 100%)`;
+(async () => { await initAuth(); })();
+</script>
+</body>
+</html>
