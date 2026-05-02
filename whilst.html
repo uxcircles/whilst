@@ -478,10 +478,11 @@ input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.3); }
 }
 
 .app-header {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
-  padding: 20px 24px;
+  padding: 0 24px;
+  height: 56px;
   border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
@@ -502,6 +503,99 @@ input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.3); }
   display: flex;
   gap: 4px;
 }
+
+.app-header-right {
+  display: flex;
+  justify-content: flex-end;
+  position: relative;
+}
+
+.account-icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--dim);
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: color 0.2s;
+  padding: 0;
+}
+.account-icon-btn:hover { color: var(--soft); }
+.account-icon-btn.signed-in { color: var(--accent); }
+
+.account-menu {
+  display: none;
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: var(--deep);
+  border: 1px solid var(--border);
+  min-width: 220px;
+  z-index: 500;
+  padding: 16px;
+}
+.account-menu.open { display: block; }
+
+.menu-status {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--dim);
+  margin-bottom: 10px;
+  letter-spacing: 0.03em;
+  word-break: break-all;
+  line-height: 1.5;
+}
+
+.menu-action-btn {
+  background: none;
+  border: none;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--accent);
+  cursor: pointer;
+  padding: 0;
+  letter-spacing: 0.03em;
+  display: block;
+}
+.menu-action-btn:hover { color: var(--white); }
+
+.menu-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 12px 0;
+}
+
+.menu-salary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.menu-salary-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--dim);
+  letter-spacing: 0.03em;
+}
+
+.menu-update-btn {
+  background: none;
+  border: none;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--accent);
+  cursor: pointer;
+  padding: 0;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.menu-update-btn:hover { color: var(--white); }
 
 .nav-btn {
   background: transparent;
@@ -1449,6 +1543,22 @@ input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.3); }
       <button class="nav-btn active" onclick="showTab('tab-today', this)"><span id="nav-now">Now</span></button>
       <button class="nav-btn" onclick="showTab('tab-weekly', this)"><span id="nav-mirror">Mirror</span></button>
     </div>
+    <div class="app-header-right">
+      <button class="account-icon-btn" id="account-icon-btn" onclick="toggleAccountMenu()" aria-label="Account">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+          <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+        </svg>
+      </button>
+      <div class="account-menu" id="account-menu">
+        <div class="menu-status" id="menu-status">Your records exist only on this device.</div>
+        <button class="menu-action-btn" id="menu-auth-action" onclick="openAuthModal(t.auth_reason, 'signup')">Create an account →</button>
+        <div class="menu-divider" id="menu-auth-divider"></div>
+        <div class="menu-salary-row">
+          <span class="menu-salary-label" id="menu-salary-display">Monthly salary: —</span>
+          <button class="menu-update-btn" onclick="openSalaryModal()" id="menu-update-salary">Update ↗</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div class="app-body">
@@ -1574,11 +1684,6 @@ input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.3); }
         <div class="begin-again-prompt">Your answers are stored securely. They are never shared, sold, or read by anyone.</div>
       </div>
 
-      <!-- Account -->
-      <div class="begin-again" id="account-section">
-        <div class="begin-again-prompt" id="account-prompt">Your records exist only on this device.</div>
-        <button class="begin-again-btn" id="account-btn" onclick="openAuthModal(null, 'signup')">Create an account to keep them →</button>
-      </div>
 
     </div>
 
@@ -2125,11 +2230,7 @@ function applyTranslations() {
     btn.textContent = t.auth_show;
   });
 
-  // Account section
-  const acPrompt = document.getElementById('account-prompt');
-  if (acPrompt && !currentUser) acPrompt.textContent = t.account_local;
-  const acBtn = document.getElementById('account-btn');
-  if (acBtn && !currentUser) acBtn.textContent = t.account_create;
+  updateAccountMenu();
 
   // Privacy note
   document.querySelectorAll('.begin-again-prompt').forEach(el => {
@@ -3097,30 +3198,60 @@ function updateSlider(val) {
   slider.style.background = `linear-gradient(to right, var(--accent) 0%, var(--accent) ${val}%, var(--border) ${val}%, var(--border) 100%)`;
 }
 
+function toggleAccountMenu() {
+  const menu = document.getElementById('account-menu');
+  menu.classList.toggle('open');
+}
+
+function closeAccountMenu() {
+  document.getElementById('account-menu')?.classList.remove('open');
+}
+
+function openSalaryModal() {
+  closeAccountMenu();
+  const monthly = localStorage.getItem('whilst_salary');
+  const input = document.getElementById('monthly-salary');
+  if (monthly && input) input.value = monthly;
+  document.getElementById('salary-modal').classList.add('open');
+}
+
+function updateAccountMenu() {
+  const iconBtn = document.getElementById('account-icon-btn');
+  const statusEl = document.getElementById('menu-status');
+  const authAction = document.getElementById('menu-auth-action');
+  const authDivider = document.getElementById('menu-auth-divider');
+
+  if (!db) {
+    if (authAction) authAction.style.display = 'none';
+    if (authDivider) authDivider.style.display = 'none';
+  } else if (currentUser) {
+    iconBtn?.classList.add('signed-in');
+    if (statusEl) statusEl.textContent = `${t.account_signed} ${currentUser.email}`;
+    if (authAction) { authAction.textContent = t.account_signout; authAction.onclick = handleSignOut; }
+  } else {
+    iconBtn?.classList.remove('signed-in');
+    if (statusEl) statusEl.textContent = t.account_local;
+    if (authAction) { authAction.textContent = t.account_create; authAction.onclick = () => { closeAccountMenu(); openAuthModal(t.auth_reason, 'signup'); }; }
+  }
+
+  const monthly = localStorage.getItem('whilst_salary');
+  const salaryEl = document.getElementById('menu-salary-display');
+  if (salaryEl) {
+    salaryEl.textContent = monthly
+      ? `${isZh ? '月薪' : 'Monthly salary'}: ${getCurrency()}${Number(monthly).toLocaleString()}`
+      : `${isZh ? '月薪' : 'Monthly salary'}: —`;
+  }
+  const updateBtn = document.getElementById('menu-update-salary');
+  if (updateBtn) updateBtn.textContent = isZh ? '修改 ↗' : 'Update ↗';
+}
+
 // ── APP ──
 function populateApp() {
   // Show FAB when app is ready
   const fab = document.getElementById('fab-record');
   if (fab) fab.style.display = 'block';
 
-  // Update account section
-  const accountSection = document.getElementById('account-section');
-  const accountPrompt = document.getElementById('account-prompt');
-  const accountBtn = document.getElementById('account-btn');
-  if (!db) {
-    // Supabase not available — hide account section
-    if (accountSection) accountSection.style.display = 'none';
-  } else if (currentUser) {
-    if (accountSection) accountSection.style.display = 'block';
-    accountPrompt.textContent = `${t.account_signed} ${currentUser.email}`;
-    accountBtn.textContent = t.account_signout;
-    accountBtn.onclick = handleSignOut;
-  } else {
-    if (accountSection) accountSection.style.display = 'block';
-    accountPrompt.textContent = t.account_local;
-    accountBtn.textContent = t.account_create;
-    accountBtn.onclick = () => openAuthModal();
-  }
+  updateAccountMenu();
   document.getElementById('app-longing').textContent = state.longing || '—';
   // Update north star label
   const nsLabelEl = document.querySelector('.north-star-label');
@@ -3659,11 +3790,20 @@ if (initSlider) initSlider.style.background = `linear-gradient(to right, var(--a
 
 document.addEventListener('keydown', function(e) {
   if (e.key !== 'Escape') return;
+  if (document.getElementById('account-menu')?.classList.contains('open')) { closeAccountMenu(); return; }
   if (document.getElementById('record-modal')?.classList.contains('open')) { closeRecordModal(); return; }
   if (document.getElementById('auth-modal')?.classList.contains('open')) { closeAuthModal(); return; }
   if (document.getElementById('salary-modal')?.classList.contains('open')) {
     document.getElementById('salary-modal').classList.remove('open');
     return;
+  }
+});
+
+document.addEventListener('click', function(e) {
+  const menu = document.getElementById('account-menu');
+  const btn = document.getElementById('account-icon-btn');
+  if (menu?.classList.contains('open') && !menu.contains(e.target) && !btn.contains(e.target)) {
+    closeAccountMenu();
   }
 });
 </script>
