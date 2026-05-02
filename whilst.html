@@ -1599,7 +1599,7 @@ input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.3); }
 <!-- AUTH MODAL -->
 <div class="followup-modal" id="auth-modal">
   <div class="followup-inner" style="max-width:380px; position:relative;">
-    <button class="record-modal-close" onclick="closeAuthModal()" style="position:absolute; top:16px; right:20px;">✕</button>
+    <button class="record-modal-close" onclick="closeAuthModal()" style="position:absolute; top:16px; right:12px;">✕</button>
     <div class="followup-label">Your records</div>
     <div class="followup-q" style="font-size:16px;" id="auth-reason">Create a free account to save your records across devices.</div>
 
@@ -1712,6 +1712,11 @@ input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.3); }
 </div>
 
 <script>
+// ── UTILS ──
+function esc(str) {
+  return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
 // ── DATE FORMATTING ──
 const userLocale = navigator.language || 'en-GB';
 const isZh = userLocale.startsWith('zh');
@@ -2393,7 +2398,21 @@ async function handleSignIn() {
   const password = document.getElementById('signin-password').value;
   if (!email || !password) { showToast(t.auth_toast_missing); return; }
   const { error } = await db.auth.signInWithPassword({ email, password });
-  if (error) { showToast(t.auth_toast_wrong); return; }
+  if (error) {
+    const code = error.code || error.message || '';
+    let msg;
+    if (code.includes('invalid_credentials') || code.includes('Invalid login')) {
+      msg = isZh ? '電子郵件或密碼錯誤。' : 'Incorrect email or password.';
+    } else if (code.includes('email_not_confirmed')) {
+      msg = isZh ? '請先確認你的電子郵件再登入。' : 'Please confirm your email before signing in.';
+    } else if (code.includes('too_many_requests') || code.includes('rate')) {
+      msg = isZh ? '嘗試次數太多，請稍後再試。' : 'Too many attempts. Please try again later.';
+    } else {
+      msg = t.auth_toast_wrong;
+    }
+    showToast(msg);
+    return;
+  }
 }
 
 async function handleSignOut() {
@@ -2427,6 +2446,7 @@ async function saveOnboarding() {
 async function saveExpenseToDb(exp) {
   if (!db || !currentUser) return;
   const { error } = await db.from('expenses').insert({
+    id: exp.id,
     user_id: currentUser.id,
     name: exp.name,
     amount: exp.amount,
@@ -2487,12 +2507,14 @@ async function loadUserData() {
     localStorage.setItem('whilst_exp', JSON.stringify(state.expenses));
   }
 
+  const onboardingScreens = ['screen-ob1', 'screen-ob2', 'screen-ob3'];
+  const currentlyOnboarding = onboardingScreens.some(id => document.getElementById(id)?.classList.contains('active'));
+
   if (ob && state.longing) {
     populateApp();
-    goTo('screen-app');
+    if (!currentlyOnboarding) goTo('screen-app');
   } else if (currentUser && !state.longing) {
-    // Signed in but no onboarding — go to onboarding
-    goTo('screen-ob1');
+    if (!currentlyOnboarding) goTo('screen-ob1');
   }
 }
 
@@ -3156,6 +3178,15 @@ function confirmBeginAgain(genuine) {
   localStorage.removeItem('whilst_followup');
   localStorage.removeItem('whilst_salary');
 
+  // Clear Supabase data if signed in
+  if (db && currentUser) {
+    const uid = currentUser.id;
+    db.from('expenses').delete().eq('user_id', uid);
+    db.from('onboarding').delete().eq('user_id', uid);
+    db.from('weekly_answers').delete().eq('user_id', uid);
+    db.from('monthly_answers').delete().eq('user_id', uid);
+  }
+
   // Reset state
   state.longing = '';
   state.windowDays = 0;
@@ -3290,7 +3321,7 @@ async function commitExpense(name, amount, motive) {
   const isFirst = state.expenses.length === 0;
 
   const exp = {
-    id: Date.now(),
+    id: crypto.randomUUID(),
     name, amount,
     motive,
     isEscaping,
@@ -3305,9 +3336,7 @@ async function commitExpense(name, amount, motive) {
   state.expenses.unshift(exp);
 
   if (isEscaping) {
-    // followupQueue uses local timestamp id — Supabase expense id is UUID, stored separately
-    const localId = typeof exp.id === 'number' ? exp.id : Date.now();
-    state.followupQueue.push({ id: localId, dueDate: Date.now() + (7 * 24 * 60 * 60 * 1000), name: exp.name, amount: exp.amount });
+    state.followupQueue.push({ id: exp.id, dueDate: Date.now() + (7 * 24 * 60 * 60 * 1000), name: exp.name, amount: exp.amount });
     localStorage.setItem('whilst_followup', JSON.stringify(state.followupQueue));
   }
 
@@ -3397,7 +3426,7 @@ function renderExpenses() {
 
   const totalSpent = thisMonth.reduce((s, e) => s + e.amount, 0);
 
-  list.innerHTML = thisMonth.slice(0, 15).map(e => {
+  list.innerHTML = thisMonth.map(e => {
     const hoursWorked = (e.amount / state.hourlyRate).toFixed(1);
     const isWarning = ['I was bored', 'I was unhappy', 'A treat to myself', "I don't know"].includes(e.motive);
 
@@ -3430,19 +3459,19 @@ function renderExpenses() {
     }
 
     return `
-      <div class="expense-item" id="exp-${e.id}">
+      <div class="expense-item" id="exp-${esc(e.id)}">
         <div class="expense-top">
-          <div class="expense-name">${e.name}</div>
+          <div class="expense-name">${esc(e.name)}</div>
           <div style="display:flex; align-items:center; gap:12px;">
             <div class="expense-amount">£${e.amount.toLocaleString()}</div>
-            <button class="expense-delete" onclick="deleteExpense('${e.id}')" title="Delete">×</button>
+            <button class="expense-delete" onclick="deleteExpense('${esc(e.id)}')" title="Delete">×</button>
           </div>
         </div>
-        <div class="expense-conversion">${conversion}</div>
+        <div class="expense-conversion">${esc(conversion)}</div>
         <div>
-          <span class="expense-motive-tag ${isWarning ? 'warning' : ''}">${e.motive}</span>
-          ${e.forgotten === false ? '<span class="expense-motive-tag" style="margin-left:4px; color:var(--dim)">Already forgotten</span>' : ''}
-          ${e.forgotten === true ? '<span class="expense-motive-tag" style="margin-left:4px; color:rgba(100,180,100,0.6); border-color:rgba(100,180,100,0.2)">Still valued</span>' : ''}
+          <span class="expense-motive-tag ${isWarning ? 'warning' : ''}">${esc(e.motive)}</span>
+          ${e.forgotten === true ? '<span class="expense-motive-tag" style="margin-left:4px; color:var(--dim)">Already forgotten</span>' : ''}
+          ${e.forgotten === false ? '<span class="expense-motive-tag" style="margin-left:4px; color:rgba(100,180,100,0.6); border-color:rgba(100,180,100,0.2)">Still valued</span>' : ''}
         </div>
       </div>
     `;
@@ -3458,8 +3487,8 @@ function renderWeekly() {
 
   const narrative = total > 0
     ? isZh
-      ? `${state.longing ? `你說過，你最不想錯過的是 <em>「${state.longing}」</em>。` : ''}這個月，你花了 <strong>£${total.toLocaleString()}</strong>。其中 <strong>£${escapingAmt.toLocaleString()}（${escapingPct}%）</strong>是在試圖讓自己感覺好一點的時候花掉的。錢已經沒了。至於感覺有沒有好一點，又是另一回事了。`
-      : `${state.longing ? `You said the one thing you most dread missing is <em>${state.longing}</em>. ` : ''}This month, you have spent <strong>£${total.toLocaleString()}</strong>. Of that, <strong>£${escapingAmt.toLocaleString()} (${escapingPct}%)</strong> was spent whilst trying to feel better about something. The money has gone. Whether the feeling improved is another matter entirely.`
+      ? `${state.longing ? `你說過，你最不想錯過的是 <em>「${esc(state.longing)}」</em>。` : ''}這個月，你花了 <strong>£${total.toLocaleString()}</strong>。其中 <strong>£${escapingAmt.toLocaleString()}（${escapingPct}%）</strong>是在試圖讓自己感覺好一點的時候花掉的。錢已經沒了。至於感覺有沒有好一點，又是另一回事了。`
+      : `${state.longing ? `You said the one thing you most dread missing is <em>${esc(state.longing)}</em>. ` : ''}This month, you have spent <strong>£${total.toLocaleString()}</strong>. Of that, <strong>£${escapingAmt.toLocaleString()} (${escapingPct}%)</strong> was spent whilst trying to feel better about something. The money has gone. Whether the feeling improved is another matter entirely.`
     : isZh ? '本月尚無記錄，先誠實地記下一筆吧。' : 'Nothing recorded yet this month. Either you have spent nothing, or you have not been paying attention. Both are worth knowing. Begin by recording something honest.';
 
   document.getElementById('weekly-narrative').innerHTML = narrative;
@@ -3471,7 +3500,7 @@ function renderAnnual() {
   const total = thisYear.reduce((s, e) => s + e.amount, 0);
   const escapingAmt = thisYear.filter(e => e.isEscaping).reduce((s, e) => s + e.amount, 0);
   const escapingPct = total > 0 ? Math.round((escapingAmt / total) * 100) : 0;
-  const forgottenCount = thisYear.filter(e => e.forgotten === false).length;
+  const forgottenCount = thisYear.filter(e => e.forgotten === true).length;
   const forgottenTotal = thisYear.filter(e => e.forgotten !== null).length;
   const forgottenPct = forgottenTotal > 0 ? Math.round((forgottenCount / forgottenTotal) * 100) : 0;
   const hours = (total / state.hourlyRate).toFixed(0);
@@ -3481,11 +3510,11 @@ function renderAnnual() {
       ? `你今年花了 <strong>£${total.toLocaleString()}</strong>，相當於你 <strong>${hours} 個小時</strong>的人生。<br><br>
          其中 <strong>${escapingPct}%</strong> 是在逃避什麼的時候花掉的。<br><br>
          在你重新檢視過的消費裡，<strong>${forgottenPct}%</strong> 是你已經忘記的。<br><br>
-         ${state.longing ? `你說過你最不想錯過的是：<em>「${state.longing}」</em>。而上面的數字，是你實際選擇的。` : ''}`
+         ${state.longing ? `你說過你最不想錯過的是：<em>「${esc(state.longing)}」</em>。而上面的數字，是你實際選擇的。` : ''}`
       : `You have spent <strong>£${total.toLocaleString()}</strong> this year — the equivalent of <strong>${hours} hours</strong> of your life.<br><br>
          <strong>${escapingPct}%</strong> of it was spent whilst escaping something.<br><br>
          Of the purchases you've revisited, <strong>${forgottenPct}%</strong> were ones you'd already forgotten.<br><br>
-         ${state.longing ? `The thing you said you most dreaded missing was: <em>"${state.longing}"</em>. The numbers above are what you chose instead.` : ''}`
+         ${state.longing ? `The thing you said you most dreaded missing was: <em>"${esc(state.longing)}"</em>. The numbers above are what you chose instead.` : ''}`
     : isZh ? '尚無記錄，先記下一筆誠實的消費。' : 'Nothing recorded yet. Begin with one honest entry.';
 }
 
