@@ -1278,7 +1278,7 @@ input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.3); }
   font-style: italic;
   letter-spacing: 0.03em;
   font-size: 15px;
-  padding: 16px 20px;
+  padding: 16px 36px 16px 20px;
   max-width: 340px;
   width: 90%;
   text-align: center;
@@ -1286,6 +1286,22 @@ input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.3); }
   z-index: 300;
   line-height: 1.5;
 }
+
+.toast-close {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 2px 4px;
+  line-height: 1;
+  font-style: normal;
+  transition: color 0.2s;
+}
+.toast-close:hover { color: var(--soft); }
 
 .toast.show {
   transform: translateX(-50%) translateY(0);
@@ -1582,7 +1598,8 @@ input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.3); }
 
 <!-- AUTH MODAL -->
 <div class="followup-modal" id="auth-modal">
-  <div class="followup-inner" style="max-width:380px;">
+  <div class="followup-inner" style="max-width:380px; position:relative;">
+    <button class="record-modal-close" onclick="closeAuthModal()" style="position:absolute; top:-4px; right:-4px;">✕</button>
     <div class="followup-label">Your records</div>
     <div class="followup-q" style="font-size:16px;" id="auth-reason">Create a free account to save your records across devices.</div>
 
@@ -1689,7 +1706,10 @@ input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.3); }
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast">
+  <span id="toast-msg"></span>
+  <button class="toast-close" onclick="clearTimeout(window._toastTimer);document.getElementById('toast').classList.remove('show')">✕</button>
+</div>
 
 <script>
 // ── DATE FORMATTING ──
@@ -3546,7 +3566,7 @@ async function saveMonthly() {
 function showToast(msg) {
   const toastEl = document.getElementById('toast');
   if (!toastEl) return;
-  toastEl.textContent = msg;
+  document.getElementById('toast-msg').textContent = msg;
   toastEl.classList.add('show');
   clearTimeout(window._toastTimer);
   window._toastTimer = setTimeout(() => toastEl.classList.remove('show'), 4500);
