@@ -502,6 +502,8 @@ input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.3); }
 .app-nav {
   display: flex;
   gap: 4px;
+  height: 100%;
+  align-items: stretch;
 }
 
 .app-header-right {
@@ -511,21 +513,21 @@ input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.3); }
 }
 
 .account-icon-btn {
-  background: none;
-  border: none;
+  background: var(--surface);
+  border: 1px solid var(--border);
   cursor: pointer;
   color: var(--dim);
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  transition: color 0.2s;
+  transition: color 0.2s, border-color 0.2s;
   padding: 0;
 }
-.account-icon-btn:hover { color: var(--soft); }
-.account-icon-btn.signed-in { color: var(--accent); }
+.account-icon-btn:hover { color: var(--soft); border-color: var(--soft); }
+.account-icon-btn.signed-in { color: var(--accent); border-color: var(--accent); }
 
 .account-menu {
   display: none;
@@ -606,9 +608,13 @@ input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.3); }
   font-size: 9px;
   letter-spacing: 1px;
   cursor: pointer;
-  padding: 8px 12px;
+  padding: 0 12px;
   transition: color 0.2s, border-color 0.2s;
   text-transform: uppercase;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  margin-bottom: -1px;
 }
 
 .nav-btn:hover { color: var(--soft); }
@@ -1555,7 +1561,7 @@ input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.3); }
         <div class="menu-divider" id="menu-auth-divider"></div>
         <div class="menu-salary-row">
           <span class="menu-salary-label" id="menu-salary-display">Monthly salary: —</span>
-          <button class="menu-update-btn" onclick="openSalaryModal()" id="menu-update-salary">Update ↗</button>
+          <button class="menu-update-btn" onclick="openSalaryModal()" id="menu-update-salary">Update →</button>
         </div>
       </div>
     </div>
@@ -3242,7 +3248,7 @@ function updateAccountMenu() {
       : `${isZh ? '月薪' : 'Monthly salary'}: —`;
   }
   const updateBtn = document.getElementById('menu-update-salary');
-  if (updateBtn) updateBtn.textContent = isZh ? '修改 ↗' : 'Update ↗';
+  if (updateBtn) updateBtn.textContent = isZh ? '修改 →' : 'Update →';
 }
 
 // ── APP ──
