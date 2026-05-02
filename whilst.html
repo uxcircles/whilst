@@ -2313,6 +2313,7 @@ function applyTranslations() {
 }
 
 let selectedLongingType = '';
+let visibleExpenseCount = 15;
 
 // ── SUPABASE ──
 const SUPABASE_URL = 'https://aeyrdjyowwopkluckjlb.supabase.co';
@@ -3343,6 +3344,7 @@ async function commitExpense(name, amount, motive) {
   localStorage.setItem('whilst_exp', JSON.stringify(state.expenses));
 
   // Close modal and update UI immediately — don't block on DB
+  visibleExpenseCount = 15;
   document.getElementById('exp-name').value = '';
   document.getElementById('exp-amount').value = '';
   document.querySelectorAll('.motive-btn').forEach(b => b.classList.remove('selected'));
@@ -3426,7 +3428,10 @@ function renderExpenses() {
 
   const totalSpent = thisMonth.reduce((s, e) => s + e.amount, 0);
 
-  list.innerHTML = thisMonth.map(e => {
+  const visible = thisMonth.slice(0, visibleExpenseCount);
+  const hasMore = thisMonth.length > visibleExpenseCount;
+
+  list.innerHTML = visible.map(e => {
     const hoursWorked = (e.amount / state.hourlyRate).toFixed(1);
     const isWarning = ['I was bored', 'I was unhappy', 'A treat to myself', "I don't know"].includes(e.motive);
 
@@ -3476,6 +3481,16 @@ function renderExpenses() {
       </div>
     `;
   }).join('');
+
+  if (hasMore) {
+    const remaining = thisMonth.length - visibleExpenseCount;
+    list.innerHTML += `<button class="begin-again-btn" style="width:100%; margin-top:8px; padding:12px 0; text-align:center;" onclick="loadMoreExpenses()">${isZh ? `載入更多（還有 ${remaining} 筆）` : `Load more — ${remaining} remaining`}</button>`;
+  }
+}
+
+function loadMoreExpenses() {
+  visibleExpenseCount += 15;
+  renderExpenses();
 }
 
 function renderWeekly() {
