@@ -664,17 +664,6 @@ input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.3); }
   line-height: 1.5;
 }
 
-.north-star-welcome {
-  font-size: 13px;
-  font-style: italic;
-  letter-spacing: 0.03em;
-  color: var(--dim);
-  line-height: 1.7;
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid var(--border);
-}
-
 .window-bar {
   margin-top: 16px;
   padding-top: 16px;
@@ -1608,7 +1597,6 @@ input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.3); }
       <div class="north-star">
         <div class="north-star-label">Your North Star</div>
         <div class="north-star-text" id="app-longing">—</div>
-        <div class="north-star-welcome" id="app-welcome" style="display:none;"></div>
         <div class="window-bar" id="app-window-bar">
           <div>
             <div class="window-result-number" style="font-size:32px" id="app-window-days">—</div>
@@ -2164,10 +2152,6 @@ const t = {
   ph_what_bought: isZh ? '你買了什麼？' : 'What did you buy?',
   motive_label_text: isZh ? '說實話，為什麼？' : 'Why, honestly?',
 
-  // Welcome messages
-  welcome_person: isZh ? '你說過，你最不想錯過的是陪伴你愛的人。看看你的時間和金錢，究竟去了哪裡。' : 'You said the one thing you most dread missing is time with someone you love. See where it has actually been going.',
-  welcome_freedom: isZh ? '你說過，你最不想錯過的是說走就走的自由。先看看是什麼讓你走不了。' : 'You said what you most dread missing is the freedom to leave. Begin by seeing what is keeping you here.',
-  welcome_work: isZh ? '你說過，你最不想錯過的是做自己真正熱愛的事。看看你用什麼換掉了它。' : 'You said what you most dread missing is work you actually love. Find out what you have been trading it for.',
 };
 
 // ── APPLY TRANSLATIONS ──
@@ -2592,6 +2576,7 @@ async function saveOnboarding() {
     selected_relation: state.selectedRelation,
     window_days: state.windowDays,
     days_per_year: state.daysPerYear,
+    child_age: state.childAge,
     window_person: state.windowPerson,
     escape_fund: state.escapeFund,
     work_hours_per_week: state.workHoursPerWeek,
@@ -2646,6 +2631,7 @@ async function loadUserData() {
     state.selectedRelation = ob.selected_relation || '';
     state.windowDays = ob.window_days || 0;
     state.daysPerYear = ob.days_per_year || 0;
+    state.childAge = ob.child_age || 0;
     state.windowPerson = ob.window_person || '';
     state.escapeFund = ob.escape_fund || 0;
     state.workHoursPerWeek = ob.work_hours_per_week || 0;
@@ -2688,6 +2674,7 @@ let state = {
   windowPerson: '',
   windowDays: 0,
   daysPerYear: 0,
+  childAge: 0,
   lifePercent: 40,
   expenses: JSON.parse(localStorage.getItem('whilst_exp') || '[]'),
   weeklyAnswers: JSON.parse(localStorage.getItem('whilst_weekly') || '[]'),
@@ -3032,6 +3019,7 @@ function calcChildWindow() {
     `At ${hours} hours a day, you have approximately ${totalHours.toLocaleString()} hours left before they leave home. Not years. Hours.`;
   document.getElementById('window-result').classList.add('visible');
   state.windowDays = Math.round(totalHours / 24);
+  state.childAge = age;
   state.windowPerson = 'my child';
 }
 
@@ -3250,22 +3238,48 @@ function updateLifeBar() {
   const wrap = document.getElementById('life-bar-wrap');
   if (!wrap) return;
 
-  if (selectedLongingType === 'person' && state.selectedRelation === 'parent'
-      && state.daysPerYear > 0 && state.windowDays > 0) {
+  const fill = document.getElementById('life-bar-fill');
+  const meta = document.getElementById('life-bar-meta');
+
+  if (selectedLongingType !== 'person' || !state.windowDays) {
+    wrap.style.display = 'none';
+    return;
+  }
+
+  const meals = Math.round(state.windowDays * 2);
+
+  if (state.selectedRelation === 'parent' && state.daysPerYear > 0) {
+    // % of parent's remaining life you are present for
     const parentTotalDays = Math.round((state.windowDays / state.daysPerYear) * 365);
     const pct = (state.windowDays / parentTotalDays) * 100;
-    const fillWidth = Math.max(0.5, pct);
-
-    document.getElementById('life-bar-fill').style.width = fillWidth + '%';
-
-    const meals = Math.round(state.windowDays * 2);
+    fill.style.width = Math.max(0.5, pct) + '%';
     const pctDisplay = pct < 1 ? pct.toFixed(1) : Math.round(pct);
-    document.getElementById('life-bar-meta').textContent =
-      isZh
-        ? `他們剩餘時間的 ${pctDisplay}%　·　≈ ${meals.toLocaleString()} 頓飯`
-        : `${pctDisplay}% of their remaining time  ·  ≈ ${meals.toLocaleString()} meals together`;
-
+    meta.textContent = isZh
+      ? `他們剩餘時間的 ${pctDisplay}%　·　≈ ${meals.toLocaleString()} 頓飯`
+      : `${pctDisplay}% of their remaining time  ·  ≈ ${meals.toLocaleString()} meals together`;
     wrap.style.display = 'block';
+
+  } else if (state.selectedRelation === 'child' && state.childAge >= 0) {
+    // % of childhood remaining (until 18)
+    const yearsLeft = Math.max(0, 18 - state.childAge);
+    const pct = (yearsLeft / 18) * 100;
+    fill.style.width = Math.max(0.5, pct) + '%';
+    const pctDisplay = pct < 1 ? pct.toFixed(1) : Math.round(pct);
+    meta.textContent = isZh
+      ? `童年剩餘的 ${pctDisplay}%　·　≈ ${meals.toLocaleString()} 頓飯`
+      : `${pctDisplay}% of their childhood left  ·  ≈ ${meals.toLocaleString()} meals together`;
+    wrap.style.display = 'block';
+
+  } else if (state.selectedRelation === 'partner') {
+    // % of the year that is truly together time
+    const pct = Math.min(100, (state.windowDays / 365) * 100);
+    fill.style.width = Math.max(0.5, pct) + '%';
+    const pctDisplay = pct < 1 ? pct.toFixed(1) : Math.round(pct);
+    meta.textContent = isZh
+      ? `一年中真正在一起的 ${pctDisplay}%　·　≈ ${meals.toLocaleString()} 頓飯`
+      : `${pctDisplay}% of the year truly together  ·  ≈ ${meals.toLocaleString()} meals`;
+    wrap.style.display = 'block';
+
   } else {
     wrap.style.display = 'none';
   }
@@ -3331,22 +3345,6 @@ function populateApp() {
   const nsLabelEl = document.querySelector('.north-star-label');
   if (nsLabelEl) nsLabelEl.textContent = t.north_star_label;
 
-  // Personalised welcome on first visit
-  const isFirstVisit = state.expenses.length === 0;
-  const welcome = document.getElementById('app-welcome');
-  if (isFirstVisit && state.longing) {
-    const welcomeMessages = {
-      person: t.welcome_person,
-      freedom: t.welcome_freedom,
-      work: t.welcome_work,
-      other: isZh ? `你說過，你最不想錯過的是「${state.longing}」。從這裡開始，看看你的消費是否反映了這件事。` : `You said what you most dread missing is "${state.longing}". This is where you begin to find out if your spending reflects that.`,
-    };
-    welcome.textContent = welcomeMessages[selectedLongingType] || welcomeMessages.other;
-    welcome.style.display = 'block';
-  } else {
-    welcome.style.display = 'none';
-  }
-
   // Window bar
   document.getElementById('app-window-days').textContent = state.windowDays
     ? state.windowDays.toLocaleString()
@@ -3411,6 +3409,7 @@ function confirmBeginAgain(genuine) {
   state.longing = '';
   state.windowDays = 0;
   state.daysPerYear = 0;
+  state.childAge = 0;
   state.windowPerson = '';
   state.escapeFund = 0;
   state.workHoursPerWeek = 0;
