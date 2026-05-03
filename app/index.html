@@ -700,6 +700,38 @@ input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.3); }
   line-height: 1.6;
 }
 
+.life-bar-wrap {
+  margin-top: 14px;
+}
+
+.life-bar-track {
+  height: 2px;
+  background: var(--muted);
+  position: relative;
+  width: 100%;
+  margin-bottom: 8px;
+  opacity: 0.4;
+}
+
+.life-bar-fill {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  background: var(--accent);
+  opacity: 1;
+  min-width: 3px;
+  transition: width 0.8s ease;
+}
+
+.life-bar-meta {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.05em;
+  color: var(--dim);
+  line-height: 1.8;
+}
+
 /* Stats */
 .stats-row {
   display: grid;
@@ -1581,7 +1613,13 @@ input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.3); }
           <div>
             <div class="window-result-number" style="font-size:32px" id="app-window-days">—</div>
           </div>
-          <div class="window-bar-label" id="app-window-label">days remaining<br>in your window</div>
+          <div class="window-bar-label" id="app-window-label">days remaining<br>with parent</div>
+        </div>
+        <div class="life-bar-wrap" id="life-bar-wrap" style="display:none;">
+          <div class="life-bar-track">
+            <div class="life-bar-fill" id="life-bar-fill" style="width:0%"></div>
+          </div>
+          <div class="life-bar-meta" id="life-bar-meta"></div>
         </div>
       </div>
 
@@ -2553,6 +2591,7 @@ async function saveOnboarding() {
     longing_text: state.longing,
     selected_relation: state.selectedRelation,
     window_days: state.windowDays,
+    days_per_year: state.daysPerYear,
     window_person: state.windowPerson,
     escape_fund: state.escapeFund,
     work_hours_per_week: state.workHoursPerWeek,
@@ -2606,6 +2645,7 @@ async function loadUserData() {
     state.longing = ob.longing_text || '';
     state.selectedRelation = ob.selected_relation || '';
     state.windowDays = ob.window_days || 0;
+    state.daysPerYear = ob.days_per_year || 0;
     state.windowPerson = ob.window_person || '';
     state.escapeFund = ob.escape_fund || 0;
     state.workHoursPerWeek = ob.work_hours_per_week || 0;
@@ -2647,6 +2687,7 @@ let state = {
   longing: '',
   windowPerson: '',
   windowDays: 0,
+  daysPerYear: 0,
   lifePercent: 40,
   expenses: JSON.parse(localStorage.getItem('whilst_exp') || '[]'),
   weeklyAnswers: JSON.parse(localStorage.getItem('whilst_weekly') || '[]'),
@@ -3182,6 +3223,7 @@ function calcWindow() {
   const totalDays = Math.round(yearsLeft * daysPerYear);
 
   state.windowDays = totalDays;
+  state.daysPerYear = daysPerYear;
   state.windowPerson = state.selectedRelation || 'them';
 
   document.getElementById('window-number').textContent = totalDays.toLocaleString() + ' days';
@@ -3202,6 +3244,31 @@ function updateSlider(val) {
   document.getElementById('slider-note').textContent = notes[rounded] || '';
   const slider = document.getElementById('life-slider');
   slider.style.background = `linear-gradient(to right, var(--accent) 0%, var(--accent) ${val}%, var(--border) ${val}%, var(--border) 100%)`;
+}
+
+function updateLifeBar() {
+  const wrap = document.getElementById('life-bar-wrap');
+  if (!wrap) return;
+
+  if (selectedLongingType === 'person' && state.selectedRelation === 'parent'
+      && state.daysPerYear > 0 && state.windowDays > 0) {
+    const parentTotalDays = Math.round((state.windowDays / state.daysPerYear) * 365);
+    const pct = (state.windowDays / parentTotalDays) * 100;
+    const fillWidth = Math.max(0.5, pct);
+
+    document.getElementById('life-bar-fill').style.width = fillWidth + '%';
+
+    const meals = Math.round(state.windowDays * 2);
+    const pctDisplay = pct < 1 ? pct.toFixed(1) : Math.round(pct);
+    document.getElementById('life-bar-meta').textContent =
+      isZh
+        ? `他們剩餘時間的 ${pctDisplay}%　·　≈ ${meals.toLocaleString()} 頓飯`
+        : `${pctDisplay}% of their remaining time  ·  ≈ ${meals.toLocaleString()} meals together`;
+
+    wrap.style.display = 'block';
+  } else {
+    wrap.style.display = 'none';
+  }
 }
 
 function toggleAccountMenu() {
@@ -3258,6 +3325,7 @@ function populateApp() {
   if (fab) fab.style.display = 'block';
 
   updateAccountMenu();
+  updateLifeBar();
   document.getElementById('app-longing').textContent = state.longing || '—';
   // Update north star label
   const nsLabelEl = document.querySelector('.north-star-label');
@@ -3342,6 +3410,7 @@ function confirmBeginAgain(genuine) {
   // Reset state
   state.longing = '';
   state.windowDays = 0;
+  state.daysPerYear = 0;
   state.windowPerson = '';
   state.escapeFund = 0;
   state.workHoursPerWeek = 0;
