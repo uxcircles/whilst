@@ -297,15 +297,15 @@ body::after {
 
 .btn-next {
   background: transparent;
-  border: none;
+  border: 1px solid var(--border);
   color: var(--dim);
   font-family: 'DM Mono', monospace;
   font-size: 11px;
   letter-spacing: 1.5px;
   cursor: default;
-  padding: 16px 0;
+  padding: 10px 20px;
   text-align: right;
-  transition: color 0.3s;
+  transition: color 0.3s, border-color 0.3s;
   margin-top: 0;
   display: flex;
   align-items: center;
@@ -313,8 +313,8 @@ body::after {
   gap: 12px;
 }
 
-.btn-next.ready { color: var(--accent); cursor: pointer; }
-.btn-next.ready:hover { color: var(--white); }
+.btn-next.ready { color: var(--accent); border-color: var(--accent); cursor: pointer; }
+.btn-next.ready:hover { color: var(--white); border-color: var(--white); }
 .btn-next.ready:hover .btn-next-arrow { transform: translateX(4px); }
 .btn-next-arrow { font-size: 18px; transition: transform 0.3s; }
 
@@ -336,8 +336,10 @@ body::after {
 .onboard-nav {
   position: fixed;
   bottom: 0;
-  left: 0;
-  right: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 540px;
   display: flex;
   justify-content: space-between;
   align-items: center;
